@@ -1,16 +1,30 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const CHeaderCSStart = 0x134;
+const CHeaderCSEnd = 0x14D;
 
 const CartridgeHeader = struct {
     name: []u8,
-    num_of_banks: usize,
+    rom_banks: usize,
     manufacturer_code: [4]u8 = .{ 0, 0, 0, 0 },
     cartridge_type: CatridgeType,
+    ram_banks: u8,
+
+    pub fn calc_checksum(header: []u8) u8 {
+        var checksum: u8 = 0;
+        for (header) |byte| {
+            checksum, _ = @subWithOverflow(checksum, byte);
+            checksum, _ = @subWithOverflow(checksum, 1);
+        }
+        return checksum;
+    }
+
     pub fn print(self: CartridgeHeader) void {
         std.debug.print("Catridge Header\n", .{});
-        std.debug.print("name: {s}\n", .{self.name});
-        std.debug.print("num_of_banks: {d}\n", .{self.num_of_banks});
+        std.debug.print("Name: {s}\n", .{self.name});
+        std.debug.print("Number of rom banks: {d}\n", .{self.rom_banks});
         std.debug.print("type: {}\n", .{self.cartridge_type});
+        std.debug.print("Ram size: {d} banks of 8 KiB each\n", .{self.rom_banks});
     }
 };
 
@@ -55,21 +69,37 @@ pub const Cartridge = struct {
         const contents = try file.readToEndAlloc(alloc, 8096 * 1024);
 
         var c = Cartridge{ .contents = contents, .alloc = alloc, .ch = undefined };
-        c.parseHeader();
+        try c.parseHeader();
         c.ch.print();
         return c;
     }
-    fn parseHeader(self: *Cartridge) void {
+    fn parseHeader(self: *Cartridge) !void {
         const name = self.contents[0x134..0x143];
         const romSizeByte = self.contents[0x148];
         const romBanks = romSizeByteToNumBanks(romSizeByte);
         const typeByte = self.contents[0x147];
+        const ram_banks_byte = self.contents[0x149];
+        const ram_banks: u8 = switch (ram_banks_byte) {
+            0, 1 => 0,
+            2 => 1,
+            3 => 4,
+            4 => 16,
+            5 => 8,
+            else => unreachable,
+        };
+        const cs_rom = self.contents[0x14D];
 
         self.ch = CartridgeHeader{
             .name = name,
-            .num_of_banks = romBanks,
+            .rom_banks = romBanks,
             .cartridge_type = @enumFromInt(typeByte),
+            .ram_banks = ram_banks,
         };
+        const cs = CartridgeHeader.calc_checksum(self.contents[CHeaderCSStart..CHeaderCSEnd]);
+        if (cs != cs_rom) {
+            std.debug.print("bad cs\n cs_rom = {d}\ncs = {d}\n", .{ cs_rom, cs });
+            return error.BadChecksum;
+        }
     }
 
     pub fn printContentsBytes(self: *const Cartridge) void {
