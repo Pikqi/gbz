@@ -5,25 +5,34 @@ pub const Instruction = struct {
     name: []const u8,
     type: InstructionType,
     length: u8,
-    leftOperand: InstructionOpperands = .NONE,
+    leftOperand: InstructionOperands = .NONE,
     leftOperandPointer: bool = false,
-    rightOperand: InstructionOpperands = .NONE,
+    rightOperand: InstructionOperands = .NONE,
     rightOperandPointer: bool = false,
     flags: InstructionFlagRegister = .{},
     condition: InstructionCondition = .NONE,
     offset_left: u16 = 0,
     offset_right: u16 = 0,
-    number: ?u16 = null,
+    number: ?u8 = null,
     increment: bool = false,
     decrement: bool = false,
     tcycle: u8,
+
+    pub fn print(self: *const Instruction) void {
+        std.debug.print("Instruction\n", .{});
+        std.debug.print("Name {s}\n", .{self.name});
+        std.debug.print("Type {s}\n", .{@tagName(self.type)});
+        std.debug.print("leftOperand {s} isPtr {}\n", .{ @tagName(self.leftOperand), self.leftOperandPointer });
+        std.debug.print("rightOperand {s} isPtr {}\n", .{ @tagName(self.rightOperand), self.rightOperandPointer });
+        std.debug.print("number {?X:02}\nlenght {d}\n", .{ self.number, self.length });
+    }
 };
 
 const NUMBER_OF_INSTRUCTIONS = 0x100;
 
 pub const InstructionArray = [NUMBER_OF_INSTRUCTIONS]?Instruction;
 
-const InstructionOpperands = enum {
+pub const InstructionOperands = enum {
     NONE,
     A,
     B,
@@ -698,7 +707,7 @@ pub const instructions: InstructionArray = blk: {
         .type = .LD,
         .length = 1,
         .leftOperand = .L,
-        .rightOperand = .H,
+        .rightOperand = .HL,
         .rightOperandPointer = true,
         .tcycle = 2,
     };
@@ -706,7 +715,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "LD (HL),E - 0x73",
         .type = .LD,
         .length = 1,
-        .leftOperand = .H,
+        .leftOperand = .HL,
         .leftOperandPointer = true,
         .rightOperand = .E,
         .tcycle = 1,
@@ -1120,10 +1129,10 @@ pub const instructions: InstructionArray = blk: {
     t_instructions[0xF0] = Instruction{
         .name = "LD A,(FF00+u8) - 0xF0",
         .type = .LD,
-        .length = 1,
+        .length = 2,
         .leftOperand = .A,
-        .leftOperandPointer = true,
         .rightOperand = .U8,
+        .rightOperandPointer = true,
         .offset_right = 0xFF00,
         .tcycle = 1,
     };

@@ -1,6 +1,9 @@
 const std = @import("std");
 
-const FlagsRegister = packed struct {
+const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
+const InstructionOperands = @import("instructions.zig").InstructionOperands;
+
+const FlagsRegister = packed struct(u8) {
     rest: u4 = 0,
     carry: bool,
     half_carry: bool,
@@ -22,9 +25,62 @@ pub const Cpu = struct {
     E: u8,
     H: u8,
     L: u8,
-    F: FlagsRegister,
+    F: FlagsRegister = .{
+        .zero = false,
+        .carry = false,
+        .half_carry = false,
+        .sub = false,
+        .rest = 0,
+    },
     pc: u16,
     sp: u16,
+    pub fn getFPtr(self: *Cpu) *u8 {
+        return @ptrCast(&self.F);
+    }
+
+    pub fn init() Cpu {
+        return Cpu{
+            .A = 0,
+            .B = 0,
+            .C = 0,
+            .D = 0,
+            .E = 0,
+            .H = 0,
+            .L = 0,
+            .pc = 0,
+            .sp = 0,
+        };
+    }
+    pub fn getU8Register(self: *Cpu, op: InstructionOperands) *u8 {
+        return switch (op) {
+            .A => &self.A,
+            .B => &self.B,
+            .C => &self.C,
+            .D => &self.D,
+            .E => &self.E,
+            .H => &self.H,
+            .L => &self.L,
+            .F => self.getFPtr(),
+            else => unreachable,
+        };
+    }
+    pub fn getDoubleU8Register(self: *Cpu, op: InstructionOperands) DoubleU8Ptr {
+        return switch (op) {
+            .AF => DoubleU8Ptr{ .upper = &self.A, .lower = self.getFPtr() },
+            .BC => DoubleU8Ptr{ .upper = &self.B, .lower = &self.C },
+            .DE => DoubleU8Ptr{ .upper = &self.D, .lower = &self.E },
+            .HL => DoubleU8Ptr{ .upper = &self.H, .lower = &self.L },
+
+            else => unreachable,
+        };
+    }
+    pub fn getU16Register(self: *Cpu, op: InstructionOperands) *u16 {
+        return switch (op) {
+            .PC => &self.pc,
+            .SP => &self.sp,
+            else => unreachable,
+        };
+    }
 
     pub fn getAF(self: *const Cpu) u16 {
         return @as(u16, @intCast(self.A)) << 8 | @as(u16, @intCast(self.F.getByte()));
