@@ -112,7 +112,7 @@ pub const Cartridge = struct {
         }
     }
 
-    pub fn destroy(self: *Cartridge) !void {
+    pub fn destroy(self: *Cartridge) void {
         self.alloc.free(self.contents);
     }
 
