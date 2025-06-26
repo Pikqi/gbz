@@ -8,19 +8,11 @@ pub const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
 
 const OperandPtrTag = enum {
     U8, //8bit cpu register or byte ptr in memory
-    U8X2, //16bit combined cpu register
-    I8, // byte ptr in memory
     U16, // 16bit cpu register PC or SP
-    VU8, // 8bit value, needed for RST
-    VU16, // 16bit value, needed for CALL
 };
 const OperandPtr = union(OperandPtrTag) {
     U8: *u8,
-    U8X2: DoubleU8Ptr,
-    I8: i8,
     U16: *u16,
-    VU8: u8,
-    VU16: u16,
 };
 
 const GetOperandPtrErrors = error{
@@ -56,61 +48,88 @@ pub const Emulator = struct {
             }
         }
 
-        const leftOp = try self.getOperandPtr(true, instruction, instruction_params);
+        const leftOp = try self.getLeftOperandPtr(instruction, instruction_params);
         std.debug.print("left {?}\n", .{leftOp});
-        const rightOp = try self.getOperandPtr(false, instruction, instruction_params);
-        _ = rightOp; // autofix
-
-        // switch (instruction.type) {
-        //     .ADD => {},
-        // }
+        const rightOp = try self.getOperandValue(false, instruction, instruction_params);
+        std.debug.print("right {d}\n", .{rightOp});
 
         pc.* += 1;
     }
-    fn getOperandPtr(
+
+    const GetOperandValueEror = error{
+        NoOperand,
+    };
+
+    fn getOperandValue(self: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) GetOperandValueEror!u16 {
+        var err: ?GetOperandValueEror = null;
+
+        const operandType = if (left) instruction.leftOperand else instruction.rightOperand;
+        const offset = if (left) instruction.offset_left else instruction.offset_right;
+        const isPtrToMemory = if (left) instruction.leftOperandPointer else instruction.rightOperandPointer;
+
+        var operandValue: u16 = switch (operandType) {
+            .NONE => {
+                err = GetOperandValueEror.NoOperand;
+                return 0;
+            },
+            .A, .B, .C, .D, .E, .F, .H, .L => @intCast(self.cpu.getU8Register(operandType).*),
+
+            .AF, .BC, .DE, .HL, .PC, .SP => self.cpu.getU16Register(operandType).*,
+
+            .U8, .I8 => @intCast(instruction_params[0]),
+
+            .U16 => @as(u16, @intCast(instruction_params[1])) << 8 | instruction_params[0],
+
+            .NUMBER => @intCast(instruction.number.?),
+        };
+
+        if (isPtrToMemory) {
+            if (operandType == .U8 and offset == 0) unreachable;
+            operandValue = self.mem[offset + operandValue];
+        }
+
+        if (err) |e| {
+            return e;
+        }
+        return operandValue;
+    }
+
+    fn getLeftOperandPtr(
         self: *Emulator,
-        isLeft: bool,
         instruction: InstructionsMod.Instruction,
         instruction_params: [2]u8,
     ) GetOperandPtrErrors!?OperandPtr {
         errdefer instruction.print();
-        const operandType = if (isLeft) instruction.leftOperand else instruction.rightOperand;
+        const operandType = instruction.leftOperand;
         if (operandType == .NONE) {
             return null;
         }
 
-        const isPtrToMemory = if (isLeft) instruction.leftOperandPointer else instruction.rightOperandPointer;
+        const isPtrToMemory = instruction.leftOperandPointer;
 
-        const offset = if (isLeft) instruction.offset_left else instruction.offset_right;
+        const offset = instruction.offset_left;
         const has_offset = offset > 0;
-
-        if (operandType == .U8) {
-            if (isPtrToMemory and has_offset) {
-                return OperandPtr{ .U8 = &self.mem[offset + instruction_params[0]] };
-            }
-            if (!isPtrToMemory) {
-                return OperandPtr{ .VU8 = instruction_params[0] };
-            }
-            return error.U8PtrNoOffset;
-        }
 
         var op = switch (operandType) {
             .A, .B, .C, .D, .E, .H, .L, .F => OperandPtr{ .U8 = self.cpu.getU8Register(operandType) },
 
-            .PC, .SP => OperandPtr{ .U16 = self.cpu.getU16Register(operandType) },
+            .PC, .SP, .AF, .BC, .DE, .HL => OperandPtr{ .U16 = self.cpu.getU16Register(operandType) },
 
-            .AF, .BC, .DE, .HL => OperandPtr{ .U8X2 = self.cpu.getDoubleU8Register(operandType) },
-            .NUMBER => OperandPtr{ .VU8 = instruction.number.? },
+            .NUMBER => unreachable,
             .U16 => {
                 // todo: check order
                 const value: u16 = @as(u16, @intCast(instruction_params[1])) << 8 & instruction_params[0];
                 if (isPtrToMemory) {
                     return OperandPtr{ .U8 = &self.mem[value] };
                 }
-                return OperandPtr{ .VU16 = value };
+                unreachable;
             },
-            .I8 => {
-                return OperandPtr{ .I8 = @bitCast(instruction_params[0]) };
+            .U8 => {
+                const value: u16 = @intCast(instruction_params[1]);
+                if (isPtrToMemory and has_offset) {
+                    return OperandPtr{ .U8 = &self.mem[offset + value] };
+                }
+                unreachable;
             },
 
             else => {
@@ -119,16 +138,9 @@ pub const Emulator = struct {
             },
         };
         if (isPtrToMemory) {
-            try switch (op) {
+            switch (op) {
                 .U16 => {
                     op = OperandPtr{ .U8 = &self.mem[op.U16.*] };
-                },
-                .VU16 => {
-                    op = OperandPtr{ .U8 = &self.mem[op.VU16] };
-                },
-                .U8X2 => {
-                    const value: u16 = @as(u16, @intCast(op.U8X2.upper.*)) << 8 & op.U8X2.upper.*;
-                    op = OperandPtr{ .U8 = &self.mem[value] };
                 },
                 .U8 => {
                     if (has_offset) {
@@ -137,9 +149,7 @@ pub const Emulator = struct {
                         return error.U8PtrNoOffset;
                     }
                 },
-
-                else => error.OperatorIsNotAPointer,
-            };
+            }
         }
 
         return op;

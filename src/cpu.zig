@@ -17,98 +17,56 @@ const FlagsRegister = packed struct(u8) {
     }
 };
 
+pub const DoubleRegister = packed struct(u16) {
+    lower: u8,
+    upper: u8,
+    pub fn getWholePtr(self: *DoubleRegister) *u16 {
+        return @ptrCast(self);
+    }
+};
+
 pub const Cpu = struct {
-    A: u8,
-    B: u8,
-    C: u8,
-    D: u8,
-    E: u8,
-    H: u8,
-    L: u8,
-    F: FlagsRegister = .{
-        .zero = false,
-        .carry = false,
-        .half_carry = false,
-        .sub = false,
-        .rest = 0,
-    },
+    AF: DoubleRegister,
+    BC: DoubleRegister,
+    DE: DoubleRegister,
+    HL: DoubleRegister,
+
     pc: u16,
     sp: u16,
-    pub fn getFPtr(self: *Cpu) *u8 {
-        return @ptrCast(&self.F);
-    }
 
     pub fn init() Cpu {
         return Cpu{
-            .A = 0,
-            .B = 0,
-            .C = 0,
-            .D = 0,
-            .E = 0,
-            .H = 0,
-            .L = 0,
+            .AF = .{ .lower = 0, .upper = 0 },
+            .BC = .{ .lower = 0, .upper = 0 },
+            .DE = .{ .lower = 0, .upper = 0 },
+            .HL = .{ .lower = 0, .upper = 0 },
             .pc = 0,
             .sp = 0,
         };
     }
     pub fn getU8Register(self: *Cpu, op: InstructionOperands) *u8 {
         return switch (op) {
-            .A => &self.A,
-            .B => &self.B,
-            .C => &self.C,
-            .D => &self.D,
-            .E => &self.E,
-            .H => &self.H,
-            .L => &self.L,
-            .F => self.getFPtr(),
-            else => unreachable,
-        };
-    }
-    pub fn getDoubleU8Register(self: *Cpu, op: InstructionOperands) DoubleU8Ptr {
-        return switch (op) {
-            .AF => DoubleU8Ptr{ .upper = &self.A, .lower = self.getFPtr() },
-            .BC => DoubleU8Ptr{ .upper = &self.B, .lower = &self.C },
-            .DE => DoubleU8Ptr{ .upper = &self.D, .lower = &self.E },
-            .HL => DoubleU8Ptr{ .upper = &self.H, .lower = &self.L },
-
+            .A => &self.AF.upper,
+            .B => &self.BC.upper,
+            .C => &self.BC.lower,
+            .D => &self.DE.upper,
+            .E => &self.DE.lower,
+            .H => &self.HL.upper,
+            .L => &self.HL.lower,
+            .F => &self.AF.lower,
             else => unreachable,
         };
     }
     pub fn getU16Register(self: *Cpu, op: InstructionOperands) *u16 {
         return switch (op) {
+            .AF => self.AF.getWholePtr(),
+            .BC => self.BC.getWholePtr(),
+            .DE => self.DE.getWholePtr(),
+            .HL => self.HL.getWholePtr(),
             .PC => &self.pc,
             .SP => &self.sp,
             else => unreachable,
         };
-    }
-
-    pub fn getAF(self: *const Cpu) u16 {
-        return @as(u16, @intCast(self.A)) << 8 | @as(u16, @intCast(self.F.getByte()));
-    }
-    pub fn setAF(self: *Cpu, value: u16) void {
-        self.A = (value & 0xFF00) >> 8;
-        self.F.setByte(value & 0xFF);
-    }
-    pub fn getBC(self: *const Cpu) u16 {
-        return @as(u16, @intCast(self.B)) << 8 | @as(u16, @intCast(self.C));
-    }
-    pub fn setBC(self: *Cpu, value: u16) void {
-        self.B = (value & 0xFF00) >> 8;
-        self.C = (value & 0xFF);
-    }
-    pub fn getDE(self: *const Cpu) u16 {
-        return @as(u16, @intCast(self.D)) << 8 | @as(u16, @intCast(self.E));
-    }
-    pub fn setDE(self: *Cpu, value: u16) void {
-        self.D = (value & 0xFF00) >> 8;
-        self.E = (value & 0xFF);
-    }
-    pub fn getHL(self: *const Cpu) u16 {
-        return @as(u16, @intCast(self.H)) << 8 | @as(u16, @intCast(self.L));
-    }
-    pub fn setHL(self: *Cpu, value: u16) void {
-        self.H = (value & 0xFF00) >> 8;
-        self.L = (value & 0xFF);
     }
 };
 
@@ -136,4 +94,16 @@ test "Flags register set byte" {
     try std.testing.expectEqual(true, f.sub);
     try std.testing.expectEqual(true, f.half_carry);
     try std.testing.expectEqual(false, f.carry);
+}
+
+test "Double Register" {
+    var c = Cpu.init();
+    c.AF.lower = 0x43;
+    c.AF.upper = 0xAB;
+
+    try std.testing.expectEqual(0xAB43, c.AF.getWholePtr().*);
+    c.AF.getWholePtr().* = 0x1234;
+
+    try std.testing.expectEqual(0x12, c.AF.upper);
+    try std.testing.expectEqual(0x34, c.AF.lower);
 }
