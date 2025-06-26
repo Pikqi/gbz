@@ -82,9 +82,9 @@ pub const Emulator = struct {
     }
 
     fn ld(self: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+        instruction.print();
         const leftPtr = try self.getLeftOperandPtr(instruction, instruction_params);
         const rightValue = try self.getOperandValue(false, instruction, instruction_params);
-        instruction.print();
 
         // 0x08
         if (instruction.type == .LD and instruction.leftOperand == .U16 and instruction.leftOperandPointer and instruction.rightOperand == .SP) {
@@ -116,19 +116,19 @@ pub const Emulator = struct {
 
         switch (instruction.increment) {
             .LEFT => {
-                self.cpu.getU8Register(instruction.leftOperand).* += 1;
+                self.cpu.getU16Register(instruction.leftOperand).* += 1;
             },
             .RIGHT => {
-                self.cpu.getU8Register(instruction.rightOperand).* += 1;
+                self.cpu.getU16Register(instruction.rightOperand).* += 1;
             },
             else => {},
         }
         switch (instruction.decrement) {
             .LEFT => {
-                self.cpu.getU8Register(instruction.leftOperand).* -= 1;
+                self.cpu.getU16Register(instruction.leftOperand).* -= 1;
             },
             .RIGHT => {
-                self.cpu.getU8Register(instruction.rightOperand).* -= 1;
+                self.cpu.getU16Register(instruction.rightOperand).* -= 1;
             },
             else => {},
         }
