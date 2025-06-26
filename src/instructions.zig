@@ -1470,6 +1470,21 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .BC,
         .tcycle = 3,
     };
+    t_instructions[0xC2] = Instruction{
+        .name = "JP NZ,u16 - 0xC2",
+        .type = .JP,
+        .leftOperand = .U16,
+        .condition = .NZ,
+        .length = 3,
+        .tcycle = 3,
+    };
+    t_instructions[0xC3] = Instruction{
+        .name = "JP u16 - 0xC3",
+        .type = .JP,
+        .leftOperand = .U16,
+        .length = 3,
+        .tcycle = 4,
+    };
     t_instructions[0xC5] = Instruction{
         .name = "PUSH BC - 0xC5",
         .type = .PUSH,
@@ -1482,6 +1497,15 @@ pub const instructions: InstructionArray = blk: {
         .type = .RET,
         .length = 1,
         .tcycle = 4,
+    };
+
+    t_instructions[0xCA] = Instruction{
+        .name = "JP Z,u16 - 0xCA",
+        .type = .JP,
+        .leftOperand = .U16,
+        .condition = .Z,
+        .length = 3,
+        .tcycle = 3,
     };
     t_instructions[0xCB] = Instruction{
         .name = "PREFIX CB - 0xCB",
@@ -1535,6 +1559,15 @@ pub const instructions: InstructionArray = blk: {
         .length = 1,
         .tcycle = 4,
     };
+    t_instructions[0xDA] = Instruction{
+        .name = "JP C,u16 - 0xDA",
+        .type = .JP,
+        .leftOperand = .U16,
+        .condition = .C,
+        .length = 3,
+        .tcycle = 3,
+    };
+
     t_instructions[0xDC] = Instruction{
         .name = "CALL C,u16 - 0xDC",
         .type = .CALL,
@@ -1579,6 +1612,14 @@ pub const instructions: InstructionArray = blk: {
             .half_carry = .SET,
             .carry = .UNSET,
         },
+    };
+
+    t_instructions[0xE9] = Instruction{
+        .name = "JP HL - 0xE9",
+        .type = .JP,
+        .leftOperand = .HL,
+        .length = 1,
+        .tcycle = 1,
     };
     t_instructions[0xEA] = Instruction{
         .name = "LD (u16),A - 0xEA",
