@@ -19,6 +19,9 @@ const GetOperandPtrErrors = error{
     OperatorIsNotAPointer,
     U8PtrNoOffset,
 };
+const GetOperandValueError = error{
+    NoOperand,
+};
 
 pub const Emulator = struct {
     cpu: Cpu,
@@ -56,12 +59,8 @@ pub const Emulator = struct {
         pc.* += 1;
     }
 
-    const GetOperandValueEror = error{
-        NoOperand,
-    };
-
-    fn getOperandValue(self: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) GetOperandValueEror!u16 {
-        var err: ?GetOperandValueEror = null;
+    fn getOperandValue(self: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) GetOperandValueError!u16 {
+        var err: ?GetOperandValueError = null;
 
         const operandType = if (left) instruction.leftOperand else instruction.rightOperand;
         const offset = if (left) instruction.offset_left else instruction.offset_right;
@@ -69,7 +68,7 @@ pub const Emulator = struct {
 
         var operandValue: u16 = switch (operandType) {
             .NONE => {
-                err = GetOperandValueEror.NoOperand;
+                err = GetOperandValueError.NoOperand;
                 return 0;
             },
             .A, .B, .C, .D, .E, .F, .H, .L => @intCast(self.cpu.getU8Register(operandType).*),
