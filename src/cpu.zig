@@ -3,7 +3,7 @@ const std = @import("std");
 const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
 const InstructionOperands = @import("instructions.zig").InstructionOperands;
 
-const FlagsRegister = packed struct(u8) {
+pub const FlagsRegister = packed struct(u8) {
     rest: u4 = 0,
     carry: bool,
     half_carry: bool,
@@ -33,6 +33,9 @@ pub const Cpu = struct {
 
     pc: u16,
     sp: u16,
+    pub fn getFlagsRegister(self: *Cpu) *FlagsRegister {
+        return @ptrCast(&self.AF.lower);
+    }
 
     pub fn init() Cpu {
         return Cpu{

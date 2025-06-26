@@ -11,7 +11,7 @@ pub fn main() !void {
     const alloc = gpa.allocator();
     defer _ = gpa.deinit();
 
-    try disassembler(alloc);
+    // try disassembler(alloc);
     try simpleExecuteLoop(alloc);
 }
 
@@ -30,7 +30,7 @@ fn disassembler(alloc: std.mem.Allocator) !void {
                 i += 1;
             }
         } else {
-            try stdow.print("{X:02} not implemented\n", .{value});
+            // try stdow.print("{X:02} not implemented\n", .{value});
         }
     }
 }
@@ -54,7 +54,7 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
         if (Instruction.instructions[value] != null) {
             try emu.step();
         } else {
-            try stdow.print("{X:02} not implemented\n", .{value});
+            // try stdow.print("{X:02} not implemented\n", .{value});
         }
     }
 }

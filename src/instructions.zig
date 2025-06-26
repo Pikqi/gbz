@@ -440,6 +440,7 @@ pub const instructions: InstructionArray = blk: {
         .type = .LD,
         .length = 1,
         .leftOperand = .HL,
+        .leftOperandPointer = true,
         .rightOperand = .A,
         .increment = .LEFT,
         .tcycle = 2,
@@ -590,6 +591,7 @@ pub const instructions: InstructionArray = blk: {
         .length = 1,
         .decrement = .LEFT,
         .leftOperand = .HL,
+        .leftOperandPointer = true,
         .rightOperand = .A,
         .tcycle = 2,
     };
@@ -652,7 +654,7 @@ pub const instructions: InstructionArray = blk: {
     };
     t_instructions[0x39] = Instruction{
         .name = "ADD HL,SP - 0x39",
-        .type = .ADC,
+        .type = .ADD,
         .length = 1,
         .leftOperand = .HL,
         .rightOperand = .SP,
@@ -1226,7 +1228,7 @@ pub const instructions: InstructionArray = blk: {
     //0x8x
     t_instructions[0x80] = Instruction{
         .name = "ADD A,B - 0x80",
-        .type = .ADC,
+        .type = .ADD,
         .length = 1,
         .leftOperand = .A,
         .rightOperand = .B,
@@ -1240,7 +1242,7 @@ pub const instructions: InstructionArray = blk: {
     };
     t_instructions[0x83] = Instruction{
         .name = "ADD A,E - 0x83",
-        .type = .ADC,
+        .type = .ADD,
         .length = 1,
         .leftOperand = .A,
         .rightOperand = .E,
@@ -1254,7 +1256,7 @@ pub const instructions: InstructionArray = blk: {
     };
     t_instructions[0x86] = Instruction{
         .name = "ADD A,(HL) - 0x86",
-        .type = .ADC,
+        .type = .ADD,
         .length = 1,
         .leftOperand = .A,
         .rightOperand = .HL,
@@ -1269,7 +1271,7 @@ pub const instructions: InstructionArray = blk: {
     };
     t_instructions[0x87] = Instruction{
         .name = "ADD A,A - 0x87",
-        .type = .ADC,
+        .type = .ADD,
         .length = 1,
         .leftOperand = .A,
         .rightOperand = .A,
