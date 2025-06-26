@@ -49,7 +49,8 @@ pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.
 
         .AF, .BC, .DE, .HL, .PC, .SP => OperandValue{ .U16 = emu.cpu.getU16Register(operandType).* },
 
-        .U8, .I8 => OperandValue{ .U8 = @intCast(instruction_params[0]) },
+        .U8 => OperandValue{ .U8 = instruction_params[0] },
+        .I8 => OperandValue{ .I8 = @bitCast(instruction_params[0]) },
 
         .U16 => OperandValue{ .U16 = @as(u16, @intCast(instruction_params[1])) << 8 | instruction_params[0] },
 
@@ -249,6 +250,39 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 }
 
+pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const operand = try getOperandValue(emu, true, instruction, instruction_params);
+    const condition = instruction.condition;
+
+    const flags = emu.cpu.getFlagsRegister();
+
+    const should_jump = switch (condition) {
+        .C => flags.carry,
+        .NC => !flags.carry,
+        .Z => flags.zero,
+        .NZ => !flags.zero,
+        .NONE => true,
+        else => unreachable,
+    };
+    switch (operand) {
+        .I8 => {
+            if (should_jump) {
+                var pc: i64 = @intCast(emu.cpu.pc);
+                pc += @intCast(operand.I8);
+                emu.cpu.pc = @intCast(pc);
+                // TODO: Increase tcycle
+                std.debug.print("Jumped to {X}\n", .{emu.cpu.pc});
+            } else {
+                std.debug.print("Did not jump \n", .{});
+            }
+        },
+        else => {
+            std.debug.print("{s}\n", .{@tagName(operand)});
+            return error.InvalidOperantType;
+        },
+    }
+}
+
 pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getLeftOperandPtr(emu, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
@@ -273,4 +307,60 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             operand.U16.*, _ = @addWithOverflow(operand.U16.*, 1);
         },
     }
+}
+
+pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const operand = try getOperandValue(emu, true, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    const pc = emu.cpu.pc;
+
+    const should_jump = switch (instruction.condition) {
+        .C => flags.carry,
+        .NC => !flags.carry,
+        .Z => flags.zero,
+        .NZ => !flags.zero,
+        .NONE => true,
+        else => unreachable,
+    };
+
+    if (!should_jump) {
+        return;
+    }
+
+    switch (operand) {
+        .U16 => {
+            const new_pc = pc + 1;
+            const upper: u8 = @intCast((new_pc & 0xFF00) >> 8);
+            const lower: u8 = @intCast(new_pc & 0xFF);
+            emu.stackPush(upper, lower);
+        },
+        else => return error.InvalidOperantType,
+    }
+    std.debug.print("Called\n", .{});
+}
+pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    const pc = &emu.cpu.pc;
+
+    const should_ret = switch (instruction.condition) {
+        .C => flags.carry,
+        .NC => !flags.carry,
+        .Z => flags.zero,
+        .NZ => !flags.zero,
+        .NONE => true,
+        else => unreachable,
+    };
+
+    if (!should_ret) {
+        return;
+    }
+
+    var upper: u8 = undefined;
+    var lower: u8 = undefined;
+    emu.stackPop(&upper, &lower);
+
+    pc.* = @as(u16, @intCast(upper)) << 8 | lower;
+    std.debug.print("Returned\n", .{});
 }

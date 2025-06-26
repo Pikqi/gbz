@@ -11,6 +11,24 @@ pub const Emulator = struct {
     cpu: Cpu,
     alloc: std.mem.Allocator,
     mem: []u8,
+    cb_prefixed: bool = false,
+
+    pub fn stackPush(self: *Emulator, upper: u8, lower: u8) void {
+        const sp = &self.cpu.sp;
+        sp.* -= 1;
+        self.mem[sp.*] = upper;
+        sp.* -= 1;
+        self.mem[sp.*] = lower;
+    }
+
+    pub fn stackPop(self: *Emulator, upper: *u8, lower: *u8) void {
+        const sp = &self.cpu.sp;
+        lower.* = self.mem[sp.*];
+        sp.* += 1;
+        upper.* = self.mem[sp.*];
+        sp.* += 1;
+    }
+
     pub fn step(self: *Emulator) !void {
         // var sp = &self.cpu.sp;
         const pc = &self.cpu.pc;
@@ -35,12 +53,26 @@ pub const Emulator = struct {
             }
         }
 
-        instruction.print();
+        // std.debug.print("\n\n", .{});
+        // instruction.print();
+        // std.debug.print("\n\n", .{});
+
+        if (self.cb_prefixed) {
+            std.debug.print("Please implement CB :)\n", .{});
+            self.cb_prefixed = false;
+            pc.* += 2;
+            return;
+        }
+
         switch (instruction.type) {
             .ADD => try implementations.add(self, instruction, instruction_params),
             .LD => try implementations.ld(self, instruction, instruction_params),
             .JP => try implementations.jp(self, instruction, instruction_params),
+            .JR => try implementations.jr(self, instruction, instruction_params),
             .INC => try implementations.inc(self, instruction, instruction_params),
+            .CALL => try implementations.call(self, instruction, instruction_params),
+            .RET => try implementations.ret(self, instruction),
+            .CB => self.cb_prefixed = true,
             else => {
                 std.debug.print("not implemented {s}\n", .{@tagName(instruction.type)});
             },

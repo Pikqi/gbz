@@ -1549,7 +1549,7 @@ pub const instructions: InstructionArray = blk: {
     t_instructions[0xD8] = Instruction{
         .name = "RET C - 0xD8",
         .type = .RET,
-        .leftOperand = .C,
+        .condition = .C,
         .length = 1,
         .tcycle = 4,
     };
