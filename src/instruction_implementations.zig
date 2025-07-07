@@ -33,6 +33,10 @@ const GetOperandValueError = error{
     NoOperand,
 };
 
+const InstructionError = error{
+    OperandProhibited,
+};
+
 pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) GetOperandValueError!OperandValue {
     var err: ?GetOperandValueError = null;
 
@@ -144,6 +148,10 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
 
+    if (instruction.leftOperand != .A) {
+        std.debug.print("ADD: left operand is not A", .{});
+        return error.OperandProhibited;
+    }
     switch (leftPtr) {
         .U8 => {
             const right: u8 = rightValue.U8;
@@ -170,6 +178,44 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             flags.sub = false;
             flags.carry = of > 0;
             std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
+        },
+    }
+}
+
+pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftPtr = try getLeftOperandPtr(emu, instruction, instruction_params);
+
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    if (instruction.leftOperand != .A) {
+        std.debug.print("SUB: left operand is not A", .{});
+        return error.OperandProhibited;
+    }
+
+    switch (rightValue) {
+        .U8 => {},
+        else => {
+            return error.OperandProhibited;
+        },
+    }
+
+    switch (leftPtr) {
+        .U8 => {
+            var of: u1 = 0;
+
+            const half_carry = (leftPtr.U8.* & 0xF - rightValue.U8 & 0xF) == 0;
+
+            leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, rightValue.U8);
+
+            flags.half_carry = half_carry;
+            flags.zero = leftPtr.U8.* == 0;
+            flags.carry = of > 0;
+            flags.sub = true;
+        },
+
+        .U16 => {
+            return error.OperandProhibited;
         },
     }
 }
@@ -305,6 +351,31 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
         .U16 => {
             operand.U16.*, _ = @addWithOverflow(operand.U16.*, 1);
+        },
+    }
+}
+pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const operand = try getLeftOperandPtr(emu, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    switch (operand) {
+        .U8 => {
+            var of: u1 = 0;
+
+            operand.U8.*, of = @subWithOverflow(operand.U8.*, 1);
+            const half_carry = (operand.U8.* & 0xF - 1) == 0;
+
+            if (instruction.flags.half_carry == .DEPENDENT) {
+                flags.half_carry = half_carry;
+            }
+            if (instruction.flags.zero == .DEPENDENT) {
+                flags.zero = operand.U8.* == 0;
+            }
+            flags.sub = true;
+        },
+
+        .U16 => {
+            operand.U16.*, _ = @subWithOverflow(operand.U16.*, 1);
         },
     }
 }

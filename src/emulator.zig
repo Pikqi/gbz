@@ -66,10 +66,12 @@ pub const Emulator = struct {
 
         switch (instruction.type) {
             .ADD => try implementations.add(self, instruction, instruction_params),
+            .SUB => try implementations.sub(self, instruction, instruction_params),
             .LD => try implementations.ld(self, instruction, instruction_params),
             .JP => try implementations.jp(self, instruction, instruction_params),
             .JR => try implementations.jr(self, instruction, instruction_params),
             .INC => try implementations.inc(self, instruction, instruction_params),
+            .DEC => try implementations.dec(self, instruction, instruction_params),
             .CALL => try implementations.call(self, instruction, instruction_params),
             .RET => try implementations.ret(self, instruction),
             .CB => self.cb_prefixed = true,
