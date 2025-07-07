@@ -63,11 +63,14 @@ pub const Emulator = struct {
             pc.* += 2;
             return;
         }
+        instruction.print_short();
 
         switch (instruction.type) {
-            .ADD => try implementations.add(self, instruction, instruction_params),
-            .SUB => try implementations.sub(self, instruction, instruction_params),
             .LD => try implementations.ld(self, instruction, instruction_params),
+            .ADD, .ADC => try implementations.add(self, instruction, instruction_params),
+            .SUB, .SBC => try implementations.sub(self, instruction, instruction_params),
+            .CP => try implementations.cp(self, instruction, instruction_params),
+            .CPL => try implementations.cpl(self),
             .JP => try implementations.jp(self, instruction, instruction_params),
             .JR => try implementations.jr(self, instruction, instruction_params),
             .INC => try implementations.inc(self, instruction, instruction_params),
@@ -75,6 +78,10 @@ pub const Emulator = struct {
             .CALL => try implementations.call(self, instruction, instruction_params),
             .RET => try implementations.ret(self, instruction),
             .CB => self.cb_prefixed = true,
+            .SCF => try implementations.scf(self),
+            .AND => try implementations.andd(self, instruction, instruction_params),
+            .XOR => try implementations.xor(self, instruction, instruction_params),
+            .OR => try implementations.orr(self, instruction, instruction_params),
             else => {
                 std.debug.print("not implemented {s}\n", .{@tagName(instruction.type)});
             },

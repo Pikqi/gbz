@@ -1,5 +1,6 @@
 const std = @import("std");
 const Cartridge = @import("cartridge.zig").Cartridge;
+const getOperandValue = @import("instruction_implementations.zig").getOperandValue;
 
 pub const Instruction = struct {
     name: []const u8,
@@ -25,6 +26,10 @@ pub const Instruction = struct {
         std.debug.print("leftOperand {s} isPtr {}\n", .{ @tagName(self.leftOperand), self.leftOperandPointer });
         std.debug.print("rightOperand {s} isPtr {}\n", .{ @tagName(self.rightOperand), self.rightOperandPointer });
         std.debug.print("number {?X:02}\nlenght {d}\n", .{ self.number, self.length });
+    }
+    pub fn print_short(self: *const Instruction) void {
+        std.debug.print("{s} ", .{self.name});
+        std.debug.print("\n\n", .{});
     }
 };
 

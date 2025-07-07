@@ -152,31 +152,56 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         std.debug.print("ADD: left operand is not A", .{});
         return error.OperandProhibited;
     }
+    const adc = instruction.type == .ADC;
+    var carry_set = false;
     switch (leftPtr) {
         .U8 => {
             const right: u8 = rightValue.U8;
             const left = leftPtr.U8;
             const leftOld = left.*;
+            var of: u1 = 0;
+
+            if (adc and flags.carry) {
+                left.*, of = @addWithOverflow(left.*, 1);
+                if (of > 0) {
+                    flags.carry = true;
+                    carry_set = true;
+                }
+            }
 
             flags.half_carry = (left.* & 0xF + right & 0xF) > 0xF;
 
-            var of: u1 = 0;
             left.*, of = @addWithOverflow(left.*, right);
             flags.zero = left.* == 0;
             flags.sub = false;
-            flags.carry = of > 0;
+            if (!carry_set) {
+                flags.carry = of > 0;
+            }
             std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
         },
         .U16 => {
             const left = leftPtr.U16;
             const leftOld = left.*;
             const right = rightValue.U16;
-
-            flags.half_carry = (left.* & 0xF00 + right & 0xF00) > 0xF00;
             var of: u1 = 0;
+
+            if (adc and flags.carry) {
+                left.*, of = @addWithOverflow(left.*, 1);
+                if (of > 0) {
+                    flags.carry = true;
+                    carry_set = true;
+                }
+            }
+            if (adc) {
+                left.* += if (flags.carry) 1 else 0;
+            }
+
+            flags.half_carry = (left.* & 0xF00 +% right & 0xF00) > 0xF00;
             left.*, of = @addWithOverflow(left.*, right);
             flags.sub = false;
-            flags.carry = of > 0;
+            if (!carry_set) {
+                flags.carry = of > 0;
+            }
             std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
         },
     }
@@ -187,6 +212,7 @@ pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
+    const sbc = instruction.type == .SBC;
 
     if (instruction.leftOperand != .A) {
         std.debug.print("SUB: left operand is not A", .{});
@@ -202,15 +228,25 @@ pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     switch (leftPtr) {
         .U8 => {
+            var carry_set = false;
             var of: u1 = 0;
+            if (sbc and flags.carry) {
+                leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, 1);
+                if (of > 0) {
+                    flags.carry = true;
+                    carry_set = true;
+                }
+            }
 
-            const half_carry = (leftPtr.U8.* & 0xF - rightValue.U8 & 0xF) == 0;
+            const half_carry = (leftPtr.U8.* & 0xF -% rightValue.U8 & 0xF) == 0;
 
             leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, rightValue.U8);
 
             flags.half_carry = half_carry;
             flags.zero = leftPtr.U8.* == 0;
-            flags.carry = of > 0;
+            if (!carry_set) {
+                flags.carry = of > 0;
+            }
             flags.sub = true;
         },
 
@@ -290,9 +326,9 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     if (should_jump) {
         emu.cpu.pc = operand.U16;
         // TODO: Increase tcycle
-        std.debug.print("Jumped to {X}", .{emu.cpu.pc});
+        // std.debug.print("Jumped to {X}", .{emu.cpu.pc});
     } else {
-        std.debug.print("Did not jump ", .{});
+        // std.debug.print("Did not jump ", .{});
     }
 }
 
@@ -317,9 +353,9 @@ pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
                 pc += @intCast(operand.I8);
                 emu.cpu.pc = @intCast(pc);
                 // TODO: Increase tcycle
-                std.debug.print("Jumped to {X}\n", .{emu.cpu.pc});
+                // std.debug.print("Jumped to {X}\n", .{emu.cpu.pc});
             } else {
-                std.debug.print("Did not jump \n", .{});
+                // std.debug.print("Did not jump \n", .{});
             }
         },
         else => {
@@ -337,7 +373,7 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U8 => {
             const value = operand.U8.*;
             var of: u1 = 0;
-            const half_carry = (value & 0xF + 1) > 0xF;
+            const half_carry = (value & 0xF +% 1) > 0xF;
 
             operand.U8.*, of = @addWithOverflow(operand.U8.*, 1);
 
@@ -363,7 +399,7 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             var of: u1 = 0;
 
             operand.U8.*, of = @subWithOverflow(operand.U8.*, 1);
-            const half_carry = (operand.U8.* & 0xF - 1) == 0;
+            const half_carry = (operand.U8.* & 0xF -% 1) == 0;
 
             if (instruction.flags.half_carry == .DEPENDENT) {
                 flags.half_carry = half_carry;
@@ -434,4 +470,122 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
 
     pc.* = @as(u16, @intCast(upper)) << 8 | lower;
     std.debug.print("Returned\n", .{});
+}
+
+pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    const A = emu.cpu.getU8Register(.A);
+
+    if (leftValue != .U8 or rightValue != .U8) {
+        std.debug.print("AND: left or right op are not u8", .{});
+        return error.OperandProhibited;
+    }
+
+    A.* = leftValue.U8 & rightValue.U8;
+    if (A.* == 0) {
+        flags.zero = true;
+    }
+    flags.sub = false;
+    flags.half_carry = true;
+    flags.carry = false;
+}
+
+pub fn orr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    const A = emu.cpu.getU8Register(.A);
+
+    if (leftValue != .U8 or rightValue != .U8) {
+        std.debug.print("OR: left or right op are not u8", .{});
+        return error.OperandProhibited;
+    }
+
+    A.* = leftValue.U8 | rightValue.U8;
+    if (A.* == 0) {
+        flags.zero = true;
+    }
+    flags.sub = false;
+    flags.half_carry = false;
+    flags.carry = false;
+}
+
+pub fn xor(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    const A = emu.cpu.getU8Register(.A);
+
+    if (leftValue != .U8 or rightValue != .U8) {
+        std.debug.print("XOR: left or right op are not u8", .{});
+        return error.OperandProhibited;
+    }
+
+    A.* = leftValue.U8 ^ rightValue.U8;
+    if (A.* == 0) {
+        flags.zero = true;
+    }
+    flags.sub = false;
+    flags.half_carry = false;
+    flags.carry = false;
+}
+
+pub fn scf(emu: *Emulator) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    flags.sub = false;
+    flags.half_carry = false;
+    flags.carry = true;
+}
+
+pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    if (instruction.leftOperand != .A) {
+        std.debug.print("CPL: left operand is not A", .{});
+        return error.OperandProhibited;
+    }
+
+    switch (rightValue) {
+        .U8 => {},
+        else => {
+            return error.OperandProhibited;
+        },
+    }
+
+    switch (leftValue) {
+        .U8 => {
+            var of: u1 = 0;
+            var new_value: u8 = 0;
+
+            const half_carry = (leftValue.U8 & 0xF -% rightValue.U8 & 0xF) == 0;
+
+            new_value, of = @subWithOverflow(leftValue.U8, rightValue.U8);
+
+            flags.half_carry = half_carry;
+            flags.zero = new_value == 0;
+            flags.carry = of > 0;
+            flags.sub = true;
+        },
+
+        else => {
+            return error.OperandProhibited;
+        },
+    }
+}
+pub fn cpl(emu: *Emulator) !void {
+    const A = emu.cpu.getU16Register(.A);
+    const flags = emu.cpu.getFlagsRegister();
+
+    A.* = ~A.*;
+
+    flags.half_carry = true;
+    flags.sub = true;
 }
