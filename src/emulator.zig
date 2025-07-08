@@ -4,14 +4,28 @@ const Cpu = @import("cpu.zig").Cpu;
 const InstructionsMod = @import("instructions.zig");
 const instructions = InstructionsMod.instructions;
 const implementations = @import("instruction_implementations.zig");
+const Allocator = std.mem.Allocator;
 
 pub const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
 
 pub const Emulator = struct {
     cpu: Cpu,
-    alloc: std.mem.Allocator,
+    alloc: Allocator,
     mem: []u8,
     cb_prefixed: bool = false,
+
+    pub fn init(alloc: Allocator) !*Emulator {
+        const emu = try alloc.create(Emulator);
+        emu.cpu = Cpu.init();
+        emu.mem = try alloc.alloc(u8, 0xFFF);
+        emu.alloc = alloc;
+
+        return emu;
+    }
+    pub fn deinit(self: *Emulator) void {
+        self.alloc.free(self.mem);
+        self.alloc.destroy(self);
+    }
 
     pub fn stackPush(self: *Emulator, upper: u8, lower: u8) void {
         const sp = &self.cpu.sp;
@@ -66,6 +80,9 @@ pub const Emulator = struct {
         instruction.print_short();
 
         switch (instruction.type) {
+            .NOP => implementations.nop(),
+            .STOP => try implementations.stop(),
+            .HALT => implementations.halt(),
             .LD => try implementations.ld(self, instruction, instruction_params),
             .ADD, .ADC => try implementations.add(self, instruction, instruction_params),
             .SUB, .SBC => try implementations.sub(self, instruction, instruction_params),
@@ -75,13 +92,21 @@ pub const Emulator = struct {
             .JR => try implementations.jr(self, instruction, instruction_params),
             .INC => try implementations.inc(self, instruction, instruction_params),
             .DEC => try implementations.dec(self, instruction, instruction_params),
+            .DAA => implementations.daa(self),
+            .CCF => implementations.ccf(self),
+            .PUSH => try implementations.push(self, instruction),
+            .POP => try implementations.pop(self, instruction),
             .CALL => try implementations.call(self, instruction, instruction_params),
             .RET => try implementations.ret(self, instruction),
+            .RST => try implementations.rst(self, instruction),
             .CB => self.cb_prefixed = true,
             .SCF => try implementations.scf(self),
             .AND => try implementations.andd(self, instruction, instruction_params),
             .XOR => try implementations.xor(self, instruction, instruction_params),
             .OR => try implementations.orr(self, instruction, instruction_params),
+            .EI => implementations.ei(self),
+            .DI => implementations.di(self),
+            .RL, .RLC, .RR, .RRC => try implementations.rotate(self, instruction),
             else => {
                 std.debug.print("not implemented {s}\n", .{@tagName(instruction.type)});
             },

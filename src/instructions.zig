@@ -340,7 +340,8 @@ pub const instructions: InstructionArray = blk: {
     };
     t_instructions[0x17] = Instruction{
         .name = "RLA - 0x17",
-        .type = .RLA,
+        .type = .RL,
+        .leftOperand = .A,
         .length = 1,
         .tcycle = 1,
         .flags = .{ .carry = .DEPENDENT },

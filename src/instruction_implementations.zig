@@ -1,4 +1,5 @@
 const std = @import("std");
+
 const Emulator = @import("emulator.zig").Emulator;
 const InstructionsMod = @import("instructions.zig");
 
@@ -37,7 +38,7 @@ const InstructionError = error{
     OperandProhibited,
 };
 
-pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) GetOperandValueError!OperandValue {
+pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: ?[2]u8) GetOperandValueError!OperandValue {
     var err: ?GetOperandValueError = null;
 
     const operandType = if (left) instruction.leftOperand else instruction.rightOperand;
@@ -53,10 +54,10 @@ pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.
 
         .AF, .BC, .DE, .HL, .PC, .SP => OperandValue{ .U16 = emu.cpu.getU16Register(operandType).* },
 
-        .U8 => OperandValue{ .U8 = instruction_params[0] },
-        .I8 => OperandValue{ .I8 = @bitCast(instruction_params[0]) },
+        .U8 => OperandValue{ .U8 = instruction_params.?[0] },
+        .I8 => OperandValue{ .I8 = @bitCast(instruction_params.?[0]) },
 
-        .U16 => OperandValue{ .U16 = @as(u16, @intCast(instruction_params[1])) << 8 | instruction_params[0] },
+        .U16 => OperandValue{ .U16 = @as(u16, @intCast(instruction_params.?[1])) << 8 | instruction_params.?[0] },
 
         .NUMBER => OperandValue{ .U8 = @intCast(instruction.number.?) },
     };
@@ -588,4 +589,134 @@ pub fn cpl(emu: *Emulator) !void {
 
     flags.half_carry = true;
     flags.sub = true;
+}
+
+pub fn nop() void {
+    // nop
+}
+
+pub fn stop() !void {
+    std.debug.print("stop not yet implemented", .{});
+}
+
+pub fn halt() void {
+    std.debug.print("stop not yet implemented", .{});
+}
+
+pub fn daa(emu: *Emulator) void {
+    const a = emu.cpu.getU8Register(.A);
+    const flags = emu.cpu.getFlagsRegister();
+
+    var offset: u8 = 0;
+    if ((!flags.sub and a.* & 0xF > 0x9) or flags.half_carry) {
+        offset |= 0x06;
+    }
+
+    if ((!flags.sub and a.* > 0x99) or flags.half_carry) {
+        offset |= 0x60;
+    }
+
+    flags.half_carry = false;
+    var of: u1 = 0;
+    if (flags.sub) {
+        a.*, of = @subWithOverflow(a.*, offset);
+    } else {
+        a.*, of = @addWithOverflow(a.*, offset);
+    }
+    flags.carry = of > 0;
+}
+
+pub fn ccf(emu: *Emulator) void {
+    emu.cpu.getFlagsRegister().carry = !emu.cpu.getFlagsRegister().carry;
+}
+
+pub fn push(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const operand = try getOperandValue(emu, true, instruction, null);
+
+    switch (operand) {
+        .U16 => {
+            const upper: u8 = @intCast((operand.U16 & 0xFF00) >> 8);
+            const lower: u8 = @intCast(operand.U16 & 0xFF);
+            emu.stackPush(upper, lower);
+        },
+        else => return error.InvalidOperantType,
+    }
+}
+pub fn pop(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const operand = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+
+    switch (operand) {
+        .U16 => {
+            var upper: u8 = undefined;
+            var lower: u8 = undefined;
+            emu.stackPop(&upper, &lower);
+            const whole: u16 = @as(u16, @intCast(upper)) << 8 | lower;
+            operand.U16.* = whole;
+        },
+        else => return error.InvalidOperantType,
+    }
+}
+pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const operand = try getOperandValue(emu, true, instruction, .{ 0, 0 });
+
+    const pc = &emu.cpu.pc;
+
+    switch (operand) {
+        .U8 => {
+            const upper: u8 = @intCast((pc.* & 0xFF00) >> 8);
+            const lower: u8 = @intCast(pc.* & 0xFF);
+            emu.stackPush(upper, lower);
+            switch (operand.U8) {
+                0...7 => pc.* = 8 * operand.U8,
+                else => unreachable,
+            }
+        },
+        else => return error.InvalidOperantType,
+    }
+}
+pub fn ei(emu: *Emulator) void {
+    _ = emu; // autofix
+    //todo interupts
+}
+pub fn di(emu: *Emulator) void {
+    _ = emu; // autofix
+    //todo interupts
+}
+
+pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+    if (leftPtr != .U8) {
+        return;
+    }
+    const operand = leftPtr.U8;
+    const a0: u1 = @intCast(operand.* & 0b1);
+    const a7: u1 = @intCast(operand.* >> 7);
+
+    switch (instruction.type) {
+        .RL => {
+            operand.*, _ = @shlWithOverflow(operand.*, 1);
+            operand.* |= a7;
+        },
+        .RLC => {
+            operand.*, _ = @shlWithOverflow(operand.*, 1);
+            operand.* |= a7;
+            flags.carry = a7 > 0;
+        },
+        .RR => {
+            operand.* >>= 1;
+            operand.* ^= 0b10000000;
+            operand.* |= @as(u8, @intCast(a0)) << 7;
+        },
+        .RRC => {
+            operand.* >>= 1;
+            operand.* ^= 0b10000000;
+            operand.* |= @as(u8, @intCast(a0)) << 7;
+            flags.carry = a0 > 0;
+        },
+        else => {
+            return error.OperandProhibited;
+        },
+    }
 }
