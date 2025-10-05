@@ -81,7 +81,7 @@ pub fn main() !void {
                     i.offset_right = 0xFF00;
                 } else {}
             } else {
-                // std.debug.print("fail: {s}, {s}\n", .{ instr.mnemonic, instr.opcode });
+                std.debug.print("fail: {s}, {s}\n", .{ instr.mnemonic, instr.opcode });
                 continue;
             }
         }
@@ -133,7 +133,11 @@ pub fn main() !void {
                             instr.operands.?[0].name.?,
                         ) orelse .NONE;
                         if (i.leftOperand == .NONE) {
-                            if (std.mem.eql(u8, instr.operands.?[0].name.?, "a8")) {
+                            const parsed_nullable = std.fmt.parseInt(u8, instr.operands.?[0].name.?, 10) catch null;
+                            if (parsed_nullable) |parsed| {
+                                i.leftOperand = .NUMBER;
+                                i.number = parsed;
+                            } else if (std.mem.eql(u8, instr.operands.?[0].name.?, "a8")) {
                                 i.leftOperand = .U8;
                             } else {
                                 std.debug.print("2fail: {s}, {s}\n", .{ instr.mnemonic, instr.opcode });

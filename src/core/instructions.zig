@@ -102,6 +102,7 @@ pub const InstructionType = enum {
     SRL,
     SWAP,
     RES,
+    SET,
     SET_OP,
     JP,
     JR,
@@ -2434,12 +2435,2623 @@ pub const instructions: InstructionArray = blk: {
 
     break :blk t_instructions;
 };
-test "1" {
+
+pub const prefixed_instructions: InstructionArray = blk: {
+    var t_instructions: InstructionArray = undefined;
+    for (&t_instructions) |*i| i.* = null;
+
+    t_instructions[0x0] = Instruction{
+        .name = "RLC B - 0x0",
+        .type = .RLC,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1] = Instruction{
+        .name = "RLC C - 0x1",
+        .type = .RLC,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2] = Instruction{
+        .name = "RLC D - 0x2",
+        .type = .RLC,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3] = Instruction{
+        .name = "RLC E - 0x3",
+        .type = .RLC,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4] = Instruction{
+        .name = "RLC H - 0x4",
+        .type = .RLC,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5] = Instruction{
+        .name = "RLC L - 0x5",
+        .type = .RLC,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6] = Instruction{
+        .name = "RLC (HL) - 0x6",
+        .type = .RLC,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7] = Instruction{
+        .name = "RLC A - 0x7",
+        .type = .RLC,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x8] = Instruction{
+        .name = "RRC B - 0x8",
+        .type = .RRC,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x9] = Instruction{
+        .name = "RRC C - 0x9",
+        .type = .RRC,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xA] = Instruction{
+        .name = "RRC D - 0xA",
+        .type = .RRC,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xB] = Instruction{
+        .name = "RRC E - 0xB",
+        .type = .RRC,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xC] = Instruction{
+        .name = "RRC H - 0xC",
+        .type = .RRC,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xD] = Instruction{
+        .name = "RRC L - 0xD",
+        .type = .RRC,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xE] = Instruction{
+        .name = "RRC (HL) - 0xE",
+        .type = .RRC,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0xF] = Instruction{
+        .name = "RRC A - 0xF",
+        .type = .RRC,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x10] = Instruction{
+        .name = "RL B - 0x10",
+        .type = .RL,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x11] = Instruction{
+        .name = "RL C - 0x11",
+        .type = .RL,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x12] = Instruction{
+        .name = "RL D - 0x12",
+        .type = .RL,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x13] = Instruction{
+        .name = "RL E - 0x13",
+        .type = .RL,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x14] = Instruction{
+        .name = "RL H - 0x14",
+        .type = .RL,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x15] = Instruction{
+        .name = "RL L - 0x15",
+        .type = .RL,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x16] = Instruction{
+        .name = "RL (HL) - 0x16",
+        .type = .RL,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x17] = Instruction{
+        .name = "RL A - 0x17",
+        .type = .RL,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x18] = Instruction{
+        .name = "RR B - 0x18",
+        .type = .RR,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x19] = Instruction{
+        .name = "RR C - 0x19",
+        .type = .RR,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1A] = Instruction{
+        .name = "RR D - 0x1A",
+        .type = .RR,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1B] = Instruction{
+        .name = "RR E - 0x1B",
+        .type = .RR,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1C] = Instruction{
+        .name = "RR H - 0x1C",
+        .type = .RR,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1D] = Instruction{
+        .name = "RR L - 0x1D",
+        .type = .RR,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1E] = Instruction{
+        .name = "RR (HL) - 0x1E",
+        .type = .RR,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x1F] = Instruction{
+        .name = "RR A - 0x1F",
+        .type = .RR,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x20] = Instruction{
+        .name = "SLA B - 0x20",
+        .type = .SLA,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x21] = Instruction{
+        .name = "SLA C - 0x21",
+        .type = .SLA,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x22] = Instruction{
+        .name = "SLA D - 0x22",
+        .type = .SLA,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x23] = Instruction{
+        .name = "SLA E - 0x23",
+        .type = .SLA,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x24] = Instruction{
+        .name = "SLA H - 0x24",
+        .type = .SLA,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x25] = Instruction{
+        .name = "SLA L - 0x25",
+        .type = .SLA,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x26] = Instruction{
+        .name = "SLA (HL) - 0x26",
+        .type = .SLA,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x27] = Instruction{
+        .name = "SLA A - 0x27",
+        .type = .SLA,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x28] = Instruction{
+        .name = "SRA B - 0x28",
+        .type = .SRA,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x29] = Instruction{
+        .name = "SRA C - 0x29",
+        .type = .SRA,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2A] = Instruction{
+        .name = "SRA D - 0x2A",
+        .type = .SRA,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2B] = Instruction{
+        .name = "SRA E - 0x2B",
+        .type = .SRA,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2C] = Instruction{
+        .name = "SRA H - 0x2C",
+        .type = .SRA,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2D] = Instruction{
+        .name = "SRA L - 0x2D",
+        .type = .SRA,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2E] = Instruction{
+        .name = "SRA (HL) - 0x2E",
+        .type = .SRA,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x2F] = Instruction{
+        .name = "SRA A - 0x2F",
+        .type = .SRA,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x30] = Instruction{
+        .name = "SWAP B - 0x30",
+        .type = .SWAP,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x31] = Instruction{
+        .name = "SWAP C - 0x31",
+        .type = .SWAP,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x32] = Instruction{
+        .name = "SWAP D - 0x32",
+        .type = .SWAP,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x33] = Instruction{
+        .name = "SWAP E - 0x33",
+        .type = .SWAP,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x34] = Instruction{
+        .name = "SWAP H - 0x34",
+        .type = .SWAP,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x35] = Instruction{
+        .name = "SWAP L - 0x35",
+        .type = .SWAP,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x36] = Instruction{
+        .name = "SWAP (HL) - 0x36",
+        .type = .SWAP,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x37] = Instruction{
+        .name = "SWAP A - 0x37",
+        .type = .SWAP,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x38] = Instruction{
+        .name = "SRL B - 0x38",
+        .type = .SRL,
+        .leftOperand = .B,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x39] = Instruction{
+        .name = "SRL C - 0x39",
+        .type = .SRL,
+        .leftOperand = .C,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3A] = Instruction{
+        .name = "SRL D - 0x3A",
+        .type = .SRL,
+        .leftOperand = .D,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3B] = Instruction{
+        .name = "SRL E - 0x3B",
+        .type = .SRL,
+        .leftOperand = .E,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3C] = Instruction{
+        .name = "SRL H - 0x3C",
+        .type = .SRL,
+        .leftOperand = .H,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3D] = Instruction{
+        .name = "SRL L - 0x3D",
+        .type = .SRL,
+        .leftOperand = .L,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3E] = Instruction{
+        .name = "SRL (HL) - 0x3E",
+        .type = .SRL,
+        .leftOperand = .HL,
+        .leftOperandPointer = true,
+        .length = 2,
+        .tcycle = 4,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x3F] = Instruction{
+        .name = "SRL A - 0x3F",
+        .type = .SRL,
+        .leftOperand = .A,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x40] = Instruction{
+        .name = "BIT 0,B - 0x40",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x41] = Instruction{
+        .name = "BIT 0,C - 0x41",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x42] = Instruction{
+        .name = "BIT 0,D - 0x42",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x43] = Instruction{
+        .name = "BIT 0,E - 0x43",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x44] = Instruction{
+        .name = "BIT 0,H - 0x44",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x45] = Instruction{
+        .name = "BIT 0,L - 0x45",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x46] = Instruction{
+        .name = "BIT 0,(HL) - 0x46",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x47] = Instruction{
+        .name = "BIT 0,A - 0x47",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x48] = Instruction{
+        .name = "BIT 1,B - 0x48",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x49] = Instruction{
+        .name = "BIT 1,C - 0x49",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4A] = Instruction{
+        .name = "BIT 1,D - 0x4A",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4B] = Instruction{
+        .name = "BIT 1,E - 0x4B",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4C] = Instruction{
+        .name = "BIT 1,H - 0x4C",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4D] = Instruction{
+        .name = "BIT 1,L - 0x4D",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4E] = Instruction{
+        .name = "BIT 1,(HL) - 0x4E",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x4F] = Instruction{
+        .name = "BIT 1,A - 0x4F",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x50] = Instruction{
+        .name = "BIT 2,B - 0x50",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x51] = Instruction{
+        .name = "BIT 2,C - 0x51",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x52] = Instruction{
+        .name = "BIT 2,D - 0x52",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x53] = Instruction{
+        .name = "BIT 2,E - 0x53",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x54] = Instruction{
+        .name = "BIT 2,H - 0x54",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x55] = Instruction{
+        .name = "BIT 2,L - 0x55",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x56] = Instruction{
+        .name = "BIT 2,(HL) - 0x56",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x57] = Instruction{
+        .name = "BIT 2,A - 0x57",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x58] = Instruction{
+        .name = "BIT 3,B - 0x58",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x59] = Instruction{
+        .name = "BIT 3,C - 0x59",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5A] = Instruction{
+        .name = "BIT 3,D - 0x5A",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5B] = Instruction{
+        .name = "BIT 3,E - 0x5B",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5C] = Instruction{
+        .name = "BIT 3,H - 0x5C",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5D] = Instruction{
+        .name = "BIT 3,L - 0x5D",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5E] = Instruction{
+        .name = "BIT 3,(HL) - 0x5E",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x5F] = Instruction{
+        .name = "BIT 3,A - 0x5F",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x60] = Instruction{
+        .name = "BIT 4,B - 0x60",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x61] = Instruction{
+        .name = "BIT 4,C - 0x61",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x62] = Instruction{
+        .name = "BIT 4,D - 0x62",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x63] = Instruction{
+        .name = "BIT 4,E - 0x63",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x64] = Instruction{
+        .name = "BIT 4,H - 0x64",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x65] = Instruction{
+        .name = "BIT 4,L - 0x65",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x66] = Instruction{
+        .name = "BIT 4,(HL) - 0x66",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x67] = Instruction{
+        .name = "BIT 4,A - 0x67",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x68] = Instruction{
+        .name = "BIT 5,B - 0x68",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x69] = Instruction{
+        .name = "BIT 5,C - 0x69",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6A] = Instruction{
+        .name = "BIT 5,D - 0x6A",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6B] = Instruction{
+        .name = "BIT 5,E - 0x6B",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6C] = Instruction{
+        .name = "BIT 5,H - 0x6C",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6D] = Instruction{
+        .name = "BIT 5,L - 0x6D",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6E] = Instruction{
+        .name = "BIT 5,(HL) - 0x6E",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x6F] = Instruction{
+        .name = "BIT 5,A - 0x6F",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x70] = Instruction{
+        .name = "BIT 6,B - 0x70",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x71] = Instruction{
+        .name = "BIT 6,C - 0x71",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x72] = Instruction{
+        .name = "BIT 6,D - 0x72",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x73] = Instruction{
+        .name = "BIT 6,E - 0x73",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x74] = Instruction{
+        .name = "BIT 6,H - 0x74",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x75] = Instruction{
+        .name = "BIT 6,L - 0x75",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x76] = Instruction{
+        .name = "BIT 6,(HL) - 0x76",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x77] = Instruction{
+        .name = "BIT 6,A - 0x77",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x78] = Instruction{
+        .name = "BIT 7,B - 0x78",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x79] = Instruction{
+        .name = "BIT 7,C - 0x79",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7A] = Instruction{
+        .name = "BIT 7,D - 0x7A",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7B] = Instruction{
+        .name = "BIT 7,E - 0x7B",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7C] = Instruction{
+        .name = "BIT 7,H - 0x7C",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7D] = Instruction{
+        .name = "BIT 7,L - 0x7D",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7E] = Instruction{
+        .name = "BIT 7,(HL) - 0x7E",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 3,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x7F] = Instruction{
+        .name = "BIT 7,A - 0x7F",
+        .type = .BIT,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+        .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
+    };
+
+    t_instructions[0x80] = Instruction{
+        .name = "RES 0,B - 0x80",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x81] = Instruction{
+        .name = "RES 0,C - 0x81",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x82] = Instruction{
+        .name = "RES 0,D - 0x82",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x83] = Instruction{
+        .name = "RES 0,E - 0x83",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x84] = Instruction{
+        .name = "RES 0,H - 0x84",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x85] = Instruction{
+        .name = "RES 0,L - 0x85",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x86] = Instruction{
+        .name = "RES 0,(HL) - 0x86",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0x87] = Instruction{
+        .name = "RES 0,A - 0x87",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x88] = Instruction{
+        .name = "RES 1,B - 0x88",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x89] = Instruction{
+        .name = "RES 1,C - 0x89",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x8A] = Instruction{
+        .name = "RES 1,D - 0x8A",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x8B] = Instruction{
+        .name = "RES 1,E - 0x8B",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x8C] = Instruction{
+        .name = "RES 1,H - 0x8C",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x8D] = Instruction{
+        .name = "RES 1,L - 0x8D",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x8E] = Instruction{
+        .name = "RES 1,(HL) - 0x8E",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0x8F] = Instruction{
+        .name = "RES 1,A - 0x8F",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x90] = Instruction{
+        .name = "RES 2,B - 0x90",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x91] = Instruction{
+        .name = "RES 2,C - 0x91",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x92] = Instruction{
+        .name = "RES 2,D - 0x92",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x93] = Instruction{
+        .name = "RES 2,E - 0x93",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x94] = Instruction{
+        .name = "RES 2,H - 0x94",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x95] = Instruction{
+        .name = "RES 2,L - 0x95",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x96] = Instruction{
+        .name = "RES 2,(HL) - 0x96",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0x97] = Instruction{
+        .name = "RES 2,A - 0x97",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x98] = Instruction{
+        .name = "RES 3,B - 0x98",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x99] = Instruction{
+        .name = "RES 3,C - 0x99",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x9A] = Instruction{
+        .name = "RES 3,D - 0x9A",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x9B] = Instruction{
+        .name = "RES 3,E - 0x9B",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x9C] = Instruction{
+        .name = "RES 3,H - 0x9C",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x9D] = Instruction{
+        .name = "RES 3,L - 0x9D",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0x9E] = Instruction{
+        .name = "RES 3,(HL) - 0x9E",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0x9F] = Instruction{
+        .name = "RES 3,A - 0x9F",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA0] = Instruction{
+        .name = "RES 4,B - 0xA0",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA1] = Instruction{
+        .name = "RES 4,C - 0xA1",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA2] = Instruction{
+        .name = "RES 4,D - 0xA2",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA3] = Instruction{
+        .name = "RES 4,E - 0xA3",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA4] = Instruction{
+        .name = "RES 4,H - 0xA4",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA5] = Instruction{
+        .name = "RES 4,L - 0xA5",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA6] = Instruction{
+        .name = "RES 4,(HL) - 0xA6",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xA7] = Instruction{
+        .name = "RES 4,A - 0xA7",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA8] = Instruction{
+        .name = "RES 5,B - 0xA8",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xA9] = Instruction{
+        .name = "RES 5,C - 0xA9",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xAA] = Instruction{
+        .name = "RES 5,D - 0xAA",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xAB] = Instruction{
+        .name = "RES 5,E - 0xAB",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xAC] = Instruction{
+        .name = "RES 5,H - 0xAC",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xAD] = Instruction{
+        .name = "RES 5,L - 0xAD",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xAE] = Instruction{
+        .name = "RES 5,(HL) - 0xAE",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xAF] = Instruction{
+        .name = "RES 5,A - 0xAF",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB0] = Instruction{
+        .name = "RES 6,B - 0xB0",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB1] = Instruction{
+        .name = "RES 6,C - 0xB1",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB2] = Instruction{
+        .name = "RES 6,D - 0xB2",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB3] = Instruction{
+        .name = "RES 6,E - 0xB3",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB4] = Instruction{
+        .name = "RES 6,H - 0xB4",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB5] = Instruction{
+        .name = "RES 6,L - 0xB5",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB6] = Instruction{
+        .name = "RES 6,(HL) - 0xB6",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xB7] = Instruction{
+        .name = "RES 6,A - 0xB7",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB8] = Instruction{
+        .name = "RES 7,B - 0xB8",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xB9] = Instruction{
+        .name = "RES 7,C - 0xB9",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xBA] = Instruction{
+        .name = "RES 7,D - 0xBA",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xBB] = Instruction{
+        .name = "RES 7,E - 0xBB",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xBC] = Instruction{
+        .name = "RES 7,H - 0xBC",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xBD] = Instruction{
+        .name = "RES 7,L - 0xBD",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xBE] = Instruction{
+        .name = "RES 7,(HL) - 0xBE",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xBF] = Instruction{
+        .name = "RES 7,A - 0xBF",
+        .type = .RES,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC0] = Instruction{
+        .name = "SET 0,B - 0xC0",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC1] = Instruction{
+        .name = "SET 0,C - 0xC1",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC2] = Instruction{
+        .name = "SET 0,D - 0xC2",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC3] = Instruction{
+        .name = "SET 0,E - 0xC3",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC4] = Instruction{
+        .name = "SET 0,H - 0xC4",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC5] = Instruction{
+        .name = "SET 0,L - 0xC5",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC6] = Instruction{
+        .name = "SET 0,(HL) - 0xC6",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xC7] = Instruction{
+        .name = "SET 0,A - 0xC7",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x0,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC8] = Instruction{
+        .name = "SET 1,B - 0xC8",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xC9] = Instruction{
+        .name = "SET 1,C - 0xC9",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xCA] = Instruction{
+        .name = "SET 1,D - 0xCA",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xCB] = Instruction{
+        .name = "SET 1,E - 0xCB",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xCC] = Instruction{
+        .name = "SET 1,H - 0xCC",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xCD] = Instruction{
+        .name = "SET 1,L - 0xCD",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xCE] = Instruction{
+        .name = "SET 1,(HL) - 0xCE",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xCF] = Instruction{
+        .name = "SET 1,A - 0xCF",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x1,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD0] = Instruction{
+        .name = "SET 2,B - 0xD0",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD1] = Instruction{
+        .name = "SET 2,C - 0xD1",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD2] = Instruction{
+        .name = "SET 2,D - 0xD2",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD3] = Instruction{
+        .name = "SET 2,E - 0xD3",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD4] = Instruction{
+        .name = "SET 2,H - 0xD4",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD5] = Instruction{
+        .name = "SET 2,L - 0xD5",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD6] = Instruction{
+        .name = "SET 2,(HL) - 0xD6",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xD7] = Instruction{
+        .name = "SET 2,A - 0xD7",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x2,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD8] = Instruction{
+        .name = "SET 3,B - 0xD8",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xD9] = Instruction{
+        .name = "SET 3,C - 0xD9",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xDA] = Instruction{
+        .name = "SET 3,D - 0xDA",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xDB] = Instruction{
+        .name = "SET 3,E - 0xDB",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xDC] = Instruction{
+        .name = "SET 3,H - 0xDC",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xDD] = Instruction{
+        .name = "SET 3,L - 0xDD",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xDE] = Instruction{
+        .name = "SET 3,(HL) - 0xDE",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xDF] = Instruction{
+        .name = "SET 3,A - 0xDF",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x3,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE0] = Instruction{
+        .name = "SET 4,B - 0xE0",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE1] = Instruction{
+        .name = "SET 4,C - 0xE1",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE2] = Instruction{
+        .name = "SET 4,D - 0xE2",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE3] = Instruction{
+        .name = "SET 4,E - 0xE3",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE4] = Instruction{
+        .name = "SET 4,H - 0xE4",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE5] = Instruction{
+        .name = "SET 4,L - 0xE5",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE6] = Instruction{
+        .name = "SET 4,(HL) - 0xE6",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xE7] = Instruction{
+        .name = "SET 4,A - 0xE7",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x4,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE8] = Instruction{
+        .name = "SET 5,B - 0xE8",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xE9] = Instruction{
+        .name = "SET 5,C - 0xE9",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xEA] = Instruction{
+        .name = "SET 5,D - 0xEA",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xEB] = Instruction{
+        .name = "SET 5,E - 0xEB",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xEC] = Instruction{
+        .name = "SET 5,H - 0xEC",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xED] = Instruction{
+        .name = "SET 5,L - 0xED",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xEE] = Instruction{
+        .name = "SET 5,(HL) - 0xEE",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xEF] = Instruction{
+        .name = "SET 5,A - 0xEF",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x5,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF0] = Instruction{
+        .name = "SET 6,B - 0xF0",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF1] = Instruction{
+        .name = "SET 6,C - 0xF1",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF2] = Instruction{
+        .name = "SET 6,D - 0xF2",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF3] = Instruction{
+        .name = "SET 6,E - 0xF3",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF4] = Instruction{
+        .name = "SET 6,H - 0xF4",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF5] = Instruction{
+        .name = "SET 6,L - 0xF5",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF6] = Instruction{
+        .name = "SET 6,(HL) - 0xF6",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xF7] = Instruction{
+        .name = "SET 6,A - 0xF7",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x6,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF8] = Instruction{
+        .name = "SET 7,B - 0xF8",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .B,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xF9] = Instruction{
+        .name = "SET 7,C - 0xF9",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .C,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xFA] = Instruction{
+        .name = "SET 7,D - 0xFA",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .D,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xFB] = Instruction{
+        .name = "SET 7,E - 0xFB",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .E,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xFC] = Instruction{
+        .name = "SET 7,H - 0xFC",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .H,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xFD] = Instruction{
+        .name = "SET 7,L - 0xFD",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .L,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    t_instructions[0xFE] = Instruction{
+        .name = "SET 7,(HL) - 0xFE",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .HL,
+        .rightOperandPointer = true,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 4,
+    };
+
+    t_instructions[0xFF] = Instruction{
+        .name = "SET 7,A - 0xFF",
+        .type = .SET,
+        .leftOperand = .NUMBER,
+        .rightOperand = .A,
+        .number = 0x7,
+        .length = 2,
+        .tcycle = 2,
+    };
+
+    break :blk t_instructions;
+};
+
+test "Number of instructions" {
     var i: usize = 0;
     for (instructions) |in| {
         if (in != null) {
             i += 1;
         }
     }
-    std.debug.print("number of instructions: {d}", .{i});
+    std.debug.print("number of instructions: {d}\n", .{i});
+    try std.testing.expectEqual(245, i);
+
+    i = 0;
+    for (prefixed_instructions) |in| {
+        if (in != null) {
+            i += 1;
+        }
+    }
+
+    std.debug.print("number of prefixed instructions: {d}\n", .{i});
+    try std.testing.expectEqual(256, i);
 }
