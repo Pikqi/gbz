@@ -62,7 +62,7 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
 
     const exe_check = b.addExecutable(.{
-        .name = "glfw-test",
+        .name = "zgb",
         .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
