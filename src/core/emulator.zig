@@ -6,7 +6,7 @@ const instructions = InstructionsMod.instructions;
 const implementations = @import("instruction_implementations.zig");
 const Allocator = std.mem.Allocator;
 
-pub const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
+pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
 pub const Emulator = struct {
     cpu: Cpu,
@@ -79,6 +79,7 @@ pub const Emulator = struct {
         }
         instruction.print_short();
 
+        //todo handle 0xF8 edge case
         switch (instruction.type) {
             .NOP => implementations.nop(),
             .STOP => try implementations.stop(),

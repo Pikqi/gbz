@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const DoubleU8Ptr = @import("common.zig").DoubleU8Ptr;
+const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 const InstructionOperands = @import("instructions.zig").InstructionOperands;
 
 pub const FlagsRegister = packed struct(u8) {

@@ -1,5 +1,4 @@
 const std = @import("std");
-const Cartridge = @import("cartridge.zig").Cartridge;
 const getOperandValue = @import("instruction_implementations.zig").getOperandValue;
 
 pub const Instruction = struct {
@@ -1706,5 +1705,5 @@ test "1" {
             i += 1;
         }
     }
-    std.debug.print("i{d}", .{i});
+    std.debug.print("number of instructions: {d}", .{i});
 }

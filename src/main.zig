@@ -1,8 +1,9 @@
 const std = @import("std");
 const Cartridge = @import("cartridge.zig").Cartridge;
-const Instruction = @import("instructions.zig");
-const Emulator = @import("emulator.zig").Emulator;
-const Cpu = @import("cpu.zig").Cpu;
+const core = @import("core");
+const instructions_mod = core.instructions;
+const Emulator = core.emulator.Emulator;
+const Cpu = core.cpu.Cpu;
 
 const stdow = std.io.getStdOut().writer();
 
@@ -23,7 +24,7 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 
     while (i < contents.len) : (i += 1) {
         const value = contents[i];
-        if (Instruction.instructions[value]) |in| {
+        if (instructions_mod.instructions[value]) |in| {
             try stdow.print("{s}\n", .{in.name});
             i += in.length - 1;
             if (value == 0xCB) {
@@ -51,7 +52,7 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
 
     while (i < contents.len) : (i += 1) {
         const value = contents[i];
-        if (Instruction.instructions[value] != null) {
+        if (instructions_mod.instructions[value] != null) {
             try emu.step();
         } else {
             // try stdow.print("{X:02} not implemented\n", .{value});
