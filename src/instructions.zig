@@ -95,7 +95,6 @@ pub const InstructionType = enum {
     BIT,
     RR,
     RL,
-    RLA,
     RRC,
     RLC,
     SLA,
