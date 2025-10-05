@@ -3,6 +3,7 @@ const std = @import("std");
 const Cpu = @import("cpu.zig").Cpu;
 const InstructionsMod = @import("instructions.zig");
 const instructions = InstructionsMod.instructions;
+const prefixed_instructions = InstructionsMod.prefixed_instructions;
 const implementations = @import("instruction_implementations.zig");
 const Allocator = std.mem.Allocator;
 
@@ -50,14 +51,15 @@ pub const Emulator = struct {
         const instruction_byte = self.mem[@intCast(pc.*)];
         var instruction: InstructionsMod.Instruction = undefined;
         var instruction_params = [2]u8{ 0, 0 };
+        const instruction_set = if (self.cb_prefixed) prefixed_instructions else instructions;
 
-        if (instructions[instruction_byte]) |instr| {
+        if (instruction_set[instruction_byte]) |instr| {
             // std.debug.print("{s}\n", .{instr.name});
             instruction = instr;
         } else {
-            // std.debug.print("{X:02} not defined\n", .{instruction_byte});
+            std.log.warn("{X:02} not defined\n", .{instruction_byte});
             pc.* += 1;
-            return;
+            return error.UnkownInstruction;
         }
 
         if (instruction.length > 1) {
@@ -72,12 +74,10 @@ pub const Emulator = struct {
         // std.debug.print("\n\n", .{});
 
         if (self.cb_prefixed) {
-            std.debug.print("Please implement CB :)\n", .{});
             self.cb_prefixed = false;
-            pc.* += 2;
             return;
         }
-        instruction.print_short();
+        // instruction.print_short();
 
         //todo handle 0xF8 edge case
         switch (instruction.type) {
@@ -109,7 +109,7 @@ pub const Emulator = struct {
             .DI => implementations.di(self),
             .RL, .RLC, .RR, .RRC => try implementations.rotate(self, instruction),
             else => {
-                std.debug.print("not implemented {s}\n", .{@tagName(instruction.type)});
+                std.log.warn("not implemented {t}\n", .{instruction.type});
             },
         }
 
