@@ -309,6 +309,7 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 }
 
+// todo conditionally add ticks
 pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const condition = instruction.condition;
@@ -333,6 +334,7 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 }
 
+// todo conditionally add ticks
 pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const condition = instruction.condition;
@@ -417,6 +419,7 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     }
 }
 
+// todo conditionally add ticks
 pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
@@ -447,6 +450,8 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     }
     std.debug.print("Called\n", .{});
 }
+
+// todo conditionally add ticks
 pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
