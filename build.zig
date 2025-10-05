@@ -63,9 +63,7 @@ pub fn build(b: *std.Build) void {
 
     const exe_check = b.addExecutable(.{
         .name = "zgb",
-        .root_source_file = b.path("src/main.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = exe_mod,
     });
 
     const check = b.step("check", "Check if it compiles");
