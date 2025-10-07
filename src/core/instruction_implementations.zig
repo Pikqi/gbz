@@ -734,3 +734,57 @@ pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         },
     }
 }
+
+pub fn sla(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+    if (leftPtr != .U8) {
+        return error.OperatorIsNotAPointer;
+    }
+    const operand = leftPtr.U8;
+
+    operand.*, const of = @shlWithOverflow(operand.*, 1);
+    flags.setFlags(instruction.flags);
+    flags.carry = of == 1;
+    flags.zero = operand.* == 0;
+}
+
+pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+    if (leftPtr != .U8) {
+        return error.OperatorIsNotAPointer;
+    }
+    const operand = leftPtr.U8;
+    const highest_bit = operand.* | (1 << 7);
+    const lowest_bit = operand.* | 1;
+
+    operand.* >>= 1;
+    operand.* |= highest_bit;
+
+    flags.setFlags(instruction.flags);
+    flags.carry = lowest_bit > 0;
+    flags.zero = operand.* == 0;
+}
+
+pub fn bit(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    if (leftValue != .U8 or rightValue != .U8) {
+        std.log.err("BIT Operand not u8", .{});
+        return error.OperandProhibited;
+    }
+
+    if (leftValue.U8 > 7) {
+        std.log.err("BIT Operand > 7", .{});
+        return error.OperandProhibited;
+    }
+    const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
+    const b: u8 = rightValue.U8 | selection_bit;
+    flags.setFlags(instruction.flags);
+    flags.zero = b == 0;
+}

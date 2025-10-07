@@ -1,7 +1,10 @@
 const std = @import("std");
 
 const DoubleU8Ptr = @import("common").DoubleU8Ptr;
-const InstructionOperands = @import("instructions.zig").InstructionOperands;
+const InstructionMod = @import("instructions.zig");
+const InstructionOperands = InstructionMod.InstructionOperands;
+const InstructionFlagRegister = InstructionMod.InstructionFlagRegister;
+const InstructionFlag = InstructionMod.InstructionFlag;
 
 pub const FlagsRegister = packed struct(u8) {
     rest: u4 = 0,
@@ -14,6 +17,19 @@ pub const FlagsRegister = packed struct(u8) {
     }
     pub fn setByte(self: *FlagsRegister, value: u8) void {
         self.* = @bitCast(value);
+    }
+    pub fn setFlags(self: *FlagsRegister, f: InstructionFlagRegister) void {
+        self.carry = setUnsetFlag(self.carry, f.carry);
+        self.zero = setUnsetFlag(self.zero, f.zero);
+        self.half_carry = setUnsetFlag(self.half_carry, f.half_carry);
+        self.sub = setUnsetFlag(self.sub, f.sub);
+    }
+    fn setUnsetFlag(f: bool, flag: InstructionFlag) bool {
+        return switch (flag) {
+            .SET => true,
+            .UNSET => false,
+            else => f,
+        };
     }
 };
 
