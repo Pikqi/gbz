@@ -18,7 +18,7 @@ pub const Emulator = struct {
     pub fn init(alloc: Allocator) !*Emulator {
         const emu = try alloc.create(Emulator);
         emu.cpu = Cpu.init();
-        emu.mem = try alloc.alloc(u8, 0xFFF);
+        emu.mem = try alloc.alloc(u8, 0xFFFF);
         emu.alloc = alloc;
 
         return emu;
@@ -78,39 +78,57 @@ pub const Emulator = struct {
             return;
         }
         //todo handle 0xF8 edge case
-        switch (instruction.type) {
-            .NOP => implementations.nop(),
-            .STOP => try implementations.stop(),
-            .HALT => implementations.halt(self),
-            .LD => try implementations.ld(self, instruction, instruction_params),
-            .ADD, .ADC => try implementations.add(self, instruction, instruction_params),
-            .SUB, .SBC => try implementations.sub(self, instruction, instruction_params),
-            .CP => try implementations.cp(self, instruction, instruction_params),
-            .CPL => try implementations.cpl(self),
-            .JP => try implementations.jp(self, instruction, instruction_params),
-            .JR => try implementations.jr(self, instruction, instruction_params),
-            .INC => try implementations.inc(self, instruction, instruction_params),
-            .DEC => try implementations.dec(self, instruction, instruction_params),
-            .DAA => implementations.daa(self),
-            .CCF => implementations.ccf(self),
-            .PUSH => try implementations.push(self, instruction),
-            .POP => try implementations.pop(self, instruction),
-            .CALL => try implementations.call(self, instruction, instruction_params),
-            .RET => try implementations.ret(self, instruction),
-            .RST => try implementations.rst(self, instruction),
-            .CB => self.cb_prefixed = true,
-            .SCF => try implementations.scf(self),
-            .AND => try implementations.andd(self, instruction, instruction_params),
-            .XOR => try implementations.xor(self, instruction, instruction_params),
-            .OR => try implementations.orr(self, instruction, instruction_params),
-            .EI => implementations.ei(self),
-            .DI => implementations.di(self),
-            .RL, .RLC, .RR, .RRC => try implementations.rotate(self, instruction),
-            else => {
-                std.log.warn("not implemented {t}\n", .{instruction.type});
-            },
-        }
 
         pc.* += 1;
     }
+    fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+        return switch (i.type) {
+            .NOP => implementations.nop(),
+            .STOP => try implementations.stop(),
+            .HALT => implementations.halt(self),
+            .LD => try implementations.ld(self, i, instruction_params),
+            .ADD, .ADC => try implementations.add(self, i, instruction_params),
+            .SUB, .SBC => try implementations.sub(self, i, instruction_params),
+            .CP => try implementations.cp(self, i, instruction_params),
+            .CPL => try implementations.cpl(self),
+            .JP => try implementations.jp(self, i, instruction_params),
+            .JR => try implementations.jr(self, i, instruction_params),
+            .INC => try implementations.inc(self, i, instruction_params),
+            .DEC => try implementations.dec(self, i, instruction_params),
+            .DAA => implementations.daa(self),
+            .CCF => implementations.ccf(self),
+            .PUSH => try implementations.push(self, i),
+            .POP => try implementations.pop(self, i),
+            .CALL => try implementations.call(self, i, instruction_params),
+            .RET => try implementations.ret(self, i),
+            .RST => try implementations.rst(self, i),
+            .CB => self.cb_prefixed = true,
+            .SCF => try implementations.scf(self),
+            .AND => try implementations.andd(self, i, instruction_params),
+            .XOR => try implementations.xor(self, i, instruction_params),
+            .OR => try implementations.orr(self, i, instruction_params),
+            .EI => implementations.ei(self),
+            .DI => implementations.di(self),
+            .RL, .RLC, .RR, .RRC => try implementations.rotate(self, i),
+            else => {
+                std.log.err("not implemented {t}\n", .{i.type});
+                return error.NotImplemented;
+            },
+        };
+    }
 };
+test "List non implemented instructions" {
+    for (0..512) |i| {
+        const instr = if (i <= 255) instructions[i] else prefixed_instructions[i - 256];
+        // ilegal instr
+        if (instr == null) continue;
+        var emu = try Emulator.init(std.testing.allocator);
+        defer emu.deinit();
+        emu.cpu.sp = 1000;
+        emu.invokeInstruction(instr.?, .{ 0, 0 }) catch |err| {
+            if (err == error.NotImplemented) {
+                std.debug.print("Instruction {t} not implemented\n", .{instr.?.type});
+            }
+        };
+    }
+}

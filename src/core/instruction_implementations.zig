@@ -149,10 +149,6 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
 
-    if (instruction.leftOperand != .A) {
-        std.debug.print("ADD: left operand is not A", .{});
-        return error.OperandProhibited;
-    }
     const adc = instruction.type == .ADC;
     var carry_set = false;
     switch (leftPtr) {
@@ -181,6 +177,20 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
         },
         .U16 => {
+            // 0xE8
+            if (rightValue == .I8) {
+                var l: i32 = @intCast(leftPtr.U16.*);
+                const r: i32 = @intCast(rightValue.I8);
+                l += r;
+                if (l < 0) {
+                    @panic("idk fix me 0xE8");
+                }
+                if (l > std.math.pow(i32, 2, 15)) {
+                    @panic("idk fix me 0xE8");
+                }
+                leftPtr.U16.* = @intCast(l);
+                return;
+            }
             const left = leftPtr.U16;
             const leftOld = left.*;
             const right = rightValue.U16;
@@ -441,6 +451,7 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
 
     switch (operand) {
         .U16 => {
+            // TODO make emu.pushPCToStack()
             const new_pc = pc + 1;
             const upper: u8 = @intCast((new_pc & 0xFF00) >> 8);
             const lower: u8 = @intCast(new_pc & 0xFF);
@@ -587,7 +598,7 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 }
 pub fn cpl(emu: *Emulator) !void {
-    const A = emu.cpu.getU16Register(.A);
+    const A = emu.cpu.getU8Register(.A);
     const flags = emu.cpu.getFlagsRegister();
 
     A.* = ~A.*;
@@ -671,10 +682,8 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
             const upper: u8 = @intCast((pc.* & 0xFF00) >> 8);
             const lower: u8 = @intCast(pc.* & 0xFF);
             emu.stackPush(upper, lower);
-            switch (operand.U8) {
-                0...7 => pc.* = 8 * operand.U8,
-                else => unreachable,
-            }
+            // TODO not sure about this
+            pc.* = operand.U8;
         },
         else => return error.InvalidOperantType,
     }
