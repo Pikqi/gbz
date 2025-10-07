@@ -78,6 +78,7 @@ pub const Emulator = struct {
             return;
         }
         //todo handle 0xF8 edge case
+        try invokeInstruction(self, instruction, instruction_params);
 
         pc.* += 1;
     }
@@ -113,11 +114,11 @@ pub const Emulator = struct {
             .SLA => try implementations.sla(self, i),
             .SRA => try implementations.sra(self, i),
             .BIT => try implementations.bit(self, i, instruction_params),
+            .SRL => try implementations.srl(self, i),
             .SWAP => try implementations.swap(self, i),
             .RES => try implementations.res(self, i, instruction_params),
             .SET => try implementations.set(self, i, instruction_params),
             else => {
-                std.log.err("not implemented {t}\n", .{i.type});
                 return error.NotImplemented;
             },
         };

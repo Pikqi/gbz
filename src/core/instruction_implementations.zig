@@ -769,6 +769,23 @@ pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     flags.zero = operand.* == 0;
 }
 
+pub fn srl(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const flags = emu.cpu.getFlagsRegister();
+
+    const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+    if (leftPtr != .U8) {
+        return error.OperatorIsNotAPointer;
+    }
+    const operand = leftPtr.U8;
+    const lowest_bit = operand.* | 1;
+
+    operand.* >>= 1;
+
+    flags.setFlags(instruction.flags);
+    flags.carry = lowest_bit > 0;
+    flags.zero = operand.* == 0;
+}
+
 pub fn bit(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
