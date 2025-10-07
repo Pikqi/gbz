@@ -809,17 +809,17 @@ pub fn swap(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
 
 pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
-    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
 
-    const right_value_ptr: *u8 = undefined;
+    var right_value_ptr: *u8 = undefined;
+    // if its a ptr to memory then it must be (HL)
     if (instruction.rightOperandPointer) {
-        right_value_ptr = &emu.mem[rightValue];
+        right_value_ptr = &emu.mem[emu.cpu.getU16Register(.HL).*];
     } else {
-        right_value_ptr = try emu.cpu.getU8Register(instruction.rightOperand);
+        right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
     }
 
-    if (leftValue != .U8 or rightValue != .U8) {
+    if (leftValue != .U8) {
         std.log.err("RES Operand not u8", .{});
         return error.OperandProhibited;
     }
@@ -829,11 +829,36 @@ pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         return error.OperandProhibited;
     }
     const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
-    const b: u8 = rightValue.U8 & selection_bit;
 
-    var mask = 0xFF;
+    var mask: u8 = 0xFF;
     mask ^= selection_bit;
     right_value_ptr.* &= mask;
     flags.setFlags(instruction.flags);
-    flags.zero = b == 0;
+}
+
+pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
+    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
+    const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
+    const flags = emu.cpu.getFlagsRegister();
+
+    var right_value_ptr: *u8 = undefined;
+    if (instruction.rightOperandPointer) {
+        right_value_ptr = &emu.mem[emu.cpu.getU16Register(.HL).*];
+    } else {
+        right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
+    }
+
+    if (leftValue != .U8 or rightValue != .U8) {
+        std.log.err("SET Operand not u8", .{});
+        return error.OperandProhibited;
+    }
+
+    if (leftValue.U8 > 7) {
+        std.log.err("SET Operand > 7", .{});
+        return error.OperandProhibited;
+    }
+    const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
+
+    right_value_ptr.* |= selection_bit;
+    flags.setFlags(instruction.flags);
 }
