@@ -762,7 +762,7 @@ pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const lowest_bit = operand.* | 1;
 
     operand.* >>= 1;
-    operand.* |= highest_bit;
+    operand.* &= highest_bit;
 
     flags.setFlags(instruction.flags);
     flags.carry = lowest_bit > 0;
@@ -784,7 +784,25 @@ pub fn bit(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         return error.OperandProhibited;
     }
     const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
-    const b: u8 = rightValue.U8 | selection_bit;
+    const b: u8 = rightValue.U8 & selection_bit;
     flags.setFlags(instruction.flags);
     flags.zero = b == 0;
+}
+
+pub fn swap(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    const operand_ptr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
+    const flags = emu.cpu.getFlagsRegister();
+
+    if (operand_ptr != .U8) {
+        std.log.err("SWAP Operand not u8", .{});
+        return error.OperandProhibited;
+    }
+    const value = operand_ptr.U8;
+    const lower: u8 = value.* & 0b1111;
+    const higher: u8 = value.* & (0b1111 << 4);
+    const new = (lower << 4) | higher >> 4;
+
+    value.* = new;
+    flags.setFlags(instruction.flags);
+    flags.*.zero = operand_ptr.U8.* == 0;
 }

@@ -111,8 +111,9 @@ pub const Emulator = struct {
             .DI => implementations.di(self),
             .RL, .RLC, .RR, .RRC => try implementations.rotate(self, i),
             .SLA => try implementations.sla(self, i),
+            .SRA => try implementations.sra(self, i),
             .BIT => try implementations.bit(self, i, instruction_params),
-            .SRA => try implementations.bit(self, i, instruction_params),
+            .SWAP => try implementations.swap(self, i),
             else => {
                 std.log.err("not implemented {t}\n", .{i.type});
                 return error.NotImplemented;
