@@ -53,7 +53,7 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     while (i < contents.len) : (i += 1) {
         const value = contents[i];
         if (instructions_mod.instructions[value] != null) {
-            try emu.step();
+            try emu.cpu_step();
         } else {
             // try stdow.print("{X:02} not implemented\n", .{value});
         }

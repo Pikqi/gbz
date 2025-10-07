@@ -44,8 +44,12 @@ pub const Emulator = struct {
         sp.* += 1;
     }
 
-    pub fn step(self: *Emulator) !void {
+    pub fn cpu_step(self: *Emulator) !void {
         // var sp = &self.cpu.sp;
+        if (self.cpu.is_halted) {
+            std.log.info("Halted\n", .{});
+            return;
+        }
         const pc = &self.cpu.pc;
 
         const instruction_byte = self.mem[@intCast(pc.*)];
@@ -69,21 +73,15 @@ pub const Emulator = struct {
             }
         }
 
-        // std.debug.print("\n\n", .{});
-        // instruction.print();
-        // std.debug.print("\n\n", .{});
-
         if (self.cb_prefixed) {
             self.cb_prefixed = false;
             return;
         }
-        // instruction.print_short();
-
         //todo handle 0xF8 edge case
         switch (instruction.type) {
             .NOP => implementations.nop(),
             .STOP => try implementations.stop(),
-            .HALT => implementations.halt(),
+            .HALT => implementations.halt(self),
             .LD => try implementations.ld(self, instruction, instruction_params),
             .ADD, .ADC => try implementations.add(self, instruction, instruction_params),
             .SUB, .SBC => try implementations.sub(self, instruction, instruction_params),

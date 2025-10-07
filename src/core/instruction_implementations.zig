@@ -604,8 +604,8 @@ pub fn stop() !void {
     std.debug.print("stop not yet implemented", .{});
 }
 
-pub fn halt() void {
-    std.debug.print("stop not yet implemented", .{});
+pub fn halt(emu: *Emulator) void {
+    emu.cpu.is_halted = true;
 }
 
 pub fn daa(emu: *Emulator) void {

@@ -33,6 +33,7 @@ pub const Cpu = struct {
 
     pc: u16,
     sp: u16,
+    is_halted: bool = false,
     pub fn getFlagsRegister(self: *Cpu) *FlagsRegister {
         return @ptrCast(&self.AF.lower);
     }
