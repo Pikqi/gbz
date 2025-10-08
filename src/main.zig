@@ -37,27 +37,19 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 }
 
 fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
-    const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
-    // const file = try std.fs.cwd().openFile("roms/cpu_instrs/individual/01-special.gb", .{});
+    // const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
+    const file = try std.fs.cwd().openFile("roms/cpu_instrs/individual/01-special.gb", .{});
     const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);
-    var i: usize = 0;
 
     var emu = Emulator.init();
-    emu.initDoctorFile("doctor_main.log") catch |err| {
-        std.log.err("Failed init doctor file {t}", .{err});
-    };
-    @memcpy(emu.mem[100 .. contents.len + 100], contents);
+    // emu.initDoctorFile("doctor_main.log") catch |err| {
+    //     std.log.err("Failed init doctor file {t}", .{err});
+    // };
+    try emu.load_rom(contents);
     // emu.initDoctorStdOut() catch |err| {
     //     std.log.err("Failed init doctor file {t}", .{err});
     // };
 
-    while (i < contents.len) : (i += 1) {
-        const value = contents[i];
-        if (instructions_mod.instructions[value] != null) {
-            try emu.cpu_step();
-        } else {
-            // try stdow.print("{X:02} not implemented\n", .{value});
-        }
-    }
+    try emu.run_emu();
 }

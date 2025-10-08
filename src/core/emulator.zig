@@ -14,6 +14,8 @@ pub const Emulator = struct {
     mem: [0xFFFF]u8 = undefined,
     cb_prefixed: bool = false,
     doctor: ?DoctorLogger = null,
+    is_stopped: bool = false,
+    has_jumped: bool = false,
 
     pub fn init() Emulator {
         return Emulator{
@@ -50,6 +52,19 @@ pub const Emulator = struct {
         sp.* += 1;
     }
 
+    pub fn load_rom(self: *Emulator, rom: []const u8) !void {
+        if (rom.len > self.mem.len - 0x100) {
+            return error.ROMTooBig;
+        }
+        @memcpy(self.mem[0..rom.len], rom);
+    }
+
+    pub fn run_emu(self: *Emulator) !void {
+        while (!self.is_stopped) {
+            try self.cpu_step();
+        }
+    }
+
     pub fn cpu_step(self: *Emulator) !void {
         // var sp = &self.cpu.sp;
         if (self.cpu.is_halted) {
@@ -68,7 +83,7 @@ pub const Emulator = struct {
         const instruction_set = if (self.cb_prefixed) prefixed_instructions else instructions;
 
         if (instruction_set[instruction_byte]) |instr| {
-            // std.debug.print("{s}\n", .{instr.name});
+            std.debug.print("{s}\n", .{instr.name});
             instruction = instr;
         } else {
             std.log.warn("{X:02} not defined\n", .{instruction_byte});
@@ -87,23 +102,25 @@ pub const Emulator = struct {
             self.cb_prefixed = false;
             return;
         }
+        self.has_jumped = false;
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
 
         if (self.doctor) |doc| {
             if (instruction.type != .CB) {
                 doc.log() catch |e| {
-                    std.log.err("Logging with doctor failed {t}", .{e});
+                    std.debug.print("Logging with doctor failed {t}", .{e});
                 };
             }
         }
-
-        pc.* += 1;
+        if (!self.has_jumped) {
+            pc.* += 1;
+        }
     }
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
         return switch (i.type) {
             .NOP => implementations.nop(),
-            .STOP => try implementations.stop(),
+            .STOP => try implementations.stop(self),
             .HALT => implementations.halt(self),
             .LD => try implementations.ld(self, i, instruction_params),
             .ADD, .ADC => try implementations.add(self, i, instruction_params),

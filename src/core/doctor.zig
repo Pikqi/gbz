@@ -31,7 +31,6 @@ pub const DoctorLogger = struct {
         const pcmem4 = self.emu.mem[pc + 3];
         const c = &self.emu.cpu;
 
-        @breakpoint();
         try self.writer.print("A:{X:02} F:{X:02} B:{X:02} C:{X:02} D:{X:02} E:{X:02} H:{X:02} L:{X:02} SP:{X:04} PC:{X:04} PCMEM:{X:02},{X:02},{X:02},{X:02}\n", .{
             c.getU8Register(.A).*,
             c.getU8Register(.F).*,

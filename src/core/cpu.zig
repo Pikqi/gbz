@@ -70,8 +70,8 @@ pub const Cpu = struct {
             .BC = .{ .upper = 0x00, .lower = 0x13 },
             .DE = .{ .upper = 0x00, .lower = 0xD8 },
             .HL = .{ .upper = 0x01, .lower = 0x4D },
-            .pc = 0xFFFE,
-            .sp = 0x0100,
+            .pc = 0x0100,
+            .sp = 0xFFFE,
         };
     }
     pub fn getU8Register(self: *Cpu, op: InstructionOperands) *u8 {

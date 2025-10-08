@@ -336,6 +336,7 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     };
 
     if (should_jump) {
+        emu.has_jumped = true;
         emu.cpu.pc = operand.U16;
         // TODO: Increase tcycle
         // std.debug.print("Jumped to {X}", .{emu.cpu.pc});
@@ -359,6 +360,7 @@ pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         .NONE => true,
         else => unreachable,
     };
+    emu.has_jumped = should_jump;
     switch (operand) {
         .I8 => {
             if (should_jump) {
@@ -448,6 +450,7 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     if (!should_jump) {
         return;
     }
+    emu.has_jumped = should_jump;
 
     switch (operand) {
         .U16 => {
@@ -486,6 +489,7 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     emu.stackPop(&upper, &lower);
 
     pc.* = @as(u16, @intCast(upper)) << 8 | lower;
+    emu.has_jumped = true;
     std.debug.print("Returned\n", .{});
 }
 
@@ -611,8 +615,9 @@ pub fn nop() void {
     // nop
 }
 
-pub fn stop() !void {
-    std.debug.print("stop not yet implemented", .{});
+//todo check
+pub fn stop(emu: *Emulator) !void {
+    emu.is_stopped = true;
 }
 
 pub fn halt(emu: *Emulator) void {
@@ -684,6 +689,7 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
             emu.stackPush(upper, lower);
             // TODO not sure about this
             pc.* = operand.U8;
+            emu.has_jumped = true;
         },
         else => return error.InvalidOperantType,
     }
