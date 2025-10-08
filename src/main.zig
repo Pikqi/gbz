@@ -37,18 +37,20 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 }
 
 fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
-    const file = try std.fs.cwd().openFile("dmg_boot.bin", .{});
-    const contents = try file.readToEndAlloc(alloc, 1024);
+    const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
+    // const file = try std.fs.cwd().openFile("roms/cpu_instrs/individual/01-special.gb", .{});
+    const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);
     var i: usize = 0;
-    var memory: [0xFFFF]u8 = undefined;
-    std.mem.copyForwards(u8, &memory, contents);
 
-    var emu = Emulator{
-        .cpu = Cpu.init(),
-        .mem = &memory,
-        .alloc = alloc,
+    var emu = Emulator.init();
+    emu.initDoctorFile("doctor_main.log") catch |err| {
+        std.log.err("Failed init doctor file {t}", .{err});
     };
+    @memcpy(emu.mem[100 .. contents.len + 100], contents);
+    // emu.initDoctorStdOut() catch |err| {
+    //     std.log.err("Failed init doctor file {t}", .{err});
+    // };
 
     while (i < contents.len) : (i += 1) {
         const value = contents[i];

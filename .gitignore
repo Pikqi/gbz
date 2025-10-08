@@ -2,3 +2,4 @@ zig-out
 .zig-cache
 sample.gb
 roms/
+*.log

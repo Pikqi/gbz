@@ -54,7 +54,7 @@ pub const Cpu = struct {
         return @ptrCast(&self.AF.lower);
     }
 
-    pub fn init() Cpu {
+    pub fn initZero() Cpu {
         return Cpu{
             .AF = .{ .lower = 0, .upper = 0 },
             .BC = .{ .lower = 0, .upper = 0 },
@@ -62,6 +62,16 @@ pub const Cpu = struct {
             .HL = .{ .lower = 0, .upper = 0 },
             .pc = 0,
             .sp = 0,
+        };
+    }
+    pub fn initBootRom() Cpu {
+        return Cpu{
+            .AF = .{ .upper = 0x01, .lower = 0xB0 },
+            .BC = .{ .upper = 0x00, .lower = 0x13 },
+            .DE = .{ .upper = 0x00, .lower = 0xD8 },
+            .HL = .{ .upper = 0x01, .lower = 0x4D },
+            .pc = 0xFFFE,
+            .sp = 0x0100,
         };
     }
     pub fn getU8Register(self: *Cpu, op: InstructionOperands) *u8 {
@@ -117,7 +127,7 @@ test "Flags register set byte" {
 }
 
 test "Double Register" {
-    var c = Cpu.init();
+    var c = Cpu.initZero();
     c.AF.lower = 0x43;
     c.AF.upper = 0xAB;
 

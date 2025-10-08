@@ -8,4 +8,5 @@ test "import" {
     _ = @import("cpu.zig");
     _ = @import("emulator.zig");
     _ = @import("instructions.zig");
+    _ = @import("doctor.zig");
 }

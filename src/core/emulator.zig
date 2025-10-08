@@ -5,27 +5,33 @@ const InstructionsMod = @import("instructions.zig");
 const instructions = InstructionsMod.instructions;
 const prefixed_instructions = InstructionsMod.prefixed_instructions;
 const implementations = @import("instruction_implementations.zig");
-const Allocator = std.mem.Allocator;
+const DoctorLogger = @import("doctor.zig").DoctorLogger;
 
 pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
 pub const Emulator = struct {
     cpu: Cpu,
-    alloc: Allocator,
-    mem: []u8,
+    mem: [0xFFFF]u8 = undefined,
     cb_prefixed: bool = false,
+    doctor: ?DoctorLogger = null,
 
-    pub fn init(alloc: Allocator) !*Emulator {
-        const emu = try alloc.create(Emulator);
-        emu.cpu = Cpu.init();
-        emu.mem = try alloc.alloc(u8, 0xFFFF);
-        emu.alloc = alloc;
-
-        return emu;
+    pub fn init() Emulator {
+        return Emulator{
+            .cpu = Cpu.initBootRom(),
+        };
     }
-    pub fn deinit(self: *Emulator) void {
-        self.alloc.free(self.mem);
-        self.alloc.destroy(self);
+    pub fn initDoctorStdOut(self: *Emulator) !void {
+        if (self.doctor != null) {
+            return error.DoctorAlreadyExists;
+        }
+        self.doctor = DoctorLogger.initStdOut(self);
+    }
+
+    pub fn initDoctorFile(self: *Emulator, file_path: []const u8) !void {
+        if (self.doctor != null) {
+            return error.DoctorAlreadyExists;
+        }
+        self.doctor = try DoctorLogger.initWithFile(self, file_path);
     }
 
     pub fn stackPush(self: *Emulator, upper: u8, lower: u8) void {
@@ -51,6 +57,10 @@ pub const Emulator = struct {
             return;
         }
         const pc = &self.cpu.pc;
+        if (pc.* >= self.mem.len) {
+            std.debug.print("pc overflow", .{});
+            return;
+        }
 
         const instruction_byte = self.mem[@intCast(pc.*)];
         var instruction: InstructionsMod.Instruction = undefined;
@@ -79,6 +89,14 @@ pub const Emulator = struct {
         }
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
+
+        if (self.doctor) |doc| {
+            if (instruction.type != .CB) {
+                doc.log() catch |e| {
+                    std.log.err("Logging with doctor failed {t}", .{e});
+                };
+            }
+        }
 
         pc.* += 1;
     }
@@ -129,8 +147,7 @@ test "List non implemented instructions" {
         const instr = if (i <= 255) instructions[i] else prefixed_instructions[i - 256];
         // ilegal instr
         if (instr == null) continue;
-        var emu = try Emulator.init(std.testing.allocator);
-        defer emu.deinit();
+        var emu = Emulator.init();
         emu.cpu.sp = 1000;
         emu.invokeInstruction(instr.?, .{ 0, 0 }) catch |err| {
             if (err == error.NotImplemented) {
