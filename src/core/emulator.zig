@@ -17,10 +17,18 @@ pub const Emulator = struct {
     is_stopped: bool = false,
     has_jumped: bool = false,
 
-    pub fn init() Emulator {
+    pub fn initZero() Emulator {
         return Emulator{
+            .cpu = Cpu.initZero(),
+        };
+    }
+
+    pub fn initBootRom() Emulator {
+        var emu = Emulator{
             .cpu = Cpu.initBootRom(),
         };
+        emu.mem[0xFF44] = 0x90;
+        return emu;
     }
     pub fn initDoctorStdOut(self: *Emulator) !void {
         if (self.doctor != null) {
@@ -106,7 +114,7 @@ pub const Emulator = struct {
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
 
-        if (self.doctor) |doc| {
+        if (self.doctor) |*doc| {
             if (instruction.type != .CB) {
                 doc.log() catch |e| {
                     std.debug.print("Logging with doctor failed {t}", .{e});
@@ -164,7 +172,7 @@ test "List non implemented instructions" {
         const instr = if (i <= 255) instructions[i] else prefixed_instructions[i - 256];
         // ilegal instr
         if (instr == null) continue;
-        var emu = Emulator.init();
+        var emu = Emulator.initBootRom();
         emu.cpu.sp = 1000;
         emu.invokeInstruction(instr.?, .{ 0, 0 }) catch |err| {
             if (err == error.NotImplemented) {

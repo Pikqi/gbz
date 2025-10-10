@@ -2,25 +2,23 @@ const std = @import("std");
 const Emulator = @import("emulator.zig").Emulator;
 
 var buffer: [1024]u8 = undefined;
+
 pub const DoctorLogger = struct {
     emu: *Emulator,
-    writer: *std.Io.Writer,
-    file_writer: ?std.fs.File.Writer = null,
+    file_writer: std.fs.File.Writer,
     pub fn initWithFile(emu: *Emulator, file_path: []const u8) !DoctorLogger {
         const file = try std.fs.cwd().createFile(file_path, .{ .truncate = true });
-        var writer = file.writerStreaming(&buffer);
-        const doc = DoctorLogger{ .emu = emu, .file_writer = writer, .writer = &writer.interface };
+        const doc = DoctorLogger{ .emu = emu, .file_writer = file.writerStreaming(&buffer) };
         return doc;
     }
 
     pub fn initStdOut(emu: *Emulator) DoctorLogger {
         const std_out = std.fs.File.stdout();
-        var writer = std_out.writerStreaming(&buffer);
-        const doc = DoctorLogger{ .emu = emu, .writer = &writer.interface };
+        const doc = DoctorLogger{ .emu = emu, .file_writer = std_out.writerStreaming(&buffer) };
         return doc;
     }
 
-    pub fn log(self: DoctorLogger) !void {
+    pub fn log(self: *DoctorLogger) !void {
         const pc = self.emu.cpu.pc;
         if (pc >= self.emu.mem.len - 4) {
             return;
@@ -31,7 +29,7 @@ pub const DoctorLogger = struct {
         const pcmem4 = self.emu.mem[pc + 3];
         const c = &self.emu.cpu;
 
-        try self.writer.print("A:{X:02} F:{X:02} B:{X:02} C:{X:02} D:{X:02} E:{X:02} H:{X:02} L:{X:02} SP:{X:04} PC:{X:04} PCMEM:{X:02},{X:02},{X:02},{X:02}\n", .{
+        try self.file_writer.interface.print("A:{X:02} F:{X:02} B:{X:02} C:{X:02} D:{X:02} E:{X:02} H:{X:02} L:{X:02} SP:{X:04} PC:{X:04} PCMEM:{X:02},{X:02},{X:02},{X:02}\n", .{
             c.getU8Register(.A).*,
             c.getU8Register(.F).*,
             c.getU8Register(.B).*,
@@ -47,19 +45,13 @@ pub const DoctorLogger = struct {
             pcmem3,
             pcmem4,
         });
-        try self.writer.flush();
+        try self.file_writer.interface.flush();
     }
 };
 
 // todo write bytes to a buffer and test against that buffer
 test "doctorLogger test" {
-    var stdout = std.fs.File.stderr().writer(&buffer);
-    var emu = Emulator.init();
-    std.debug.print("doctor start \n", .{});
-
-    const file = try std.fs.cwd().createFile("doctor.log", .{ .truncate = true });
-    var file_writer = file.writer(&buffer);
-
+    var emu = Emulator.initBootRom();
     emu.cpu.getU8Register(.A).* = 0x01;
     emu.cpu.getU8Register(.F).* = 0xB0;
     emu.cpu.getU8Register(.B).* = 0x00;
@@ -70,22 +62,8 @@ test "doctorLogger test" {
     emu.cpu.getU16Register(.SP).* = 0xFFFE;
     emu.cpu.getU16Register(.PC).* = 0x0100;
 
-    var doctor_stdout = DoctorLogger{ .emu = &emu, .writer = &stdout.interface };
-    try doctor_stdout.log();
-    try doctor_stdout.log();
-    try doctor_stdout.log();
-
-    var doctor_file = DoctorLogger{ .emu = &emu, .writer = &file_writer.interface };
+    var doctor_file = try DoctorLogger.initWithFile(&emu, "doctor-test.log");
     try doctor_file.log();
     try doctor_file.log();
     try doctor_file.log();
-
-    //
-    // try doctor.doctorLoggerToWriter();
-    // try doctor.doctorLoggerToWriter();
-    // try doctor.doctorLogger();
-    // try doctor.doctorLogger();
-    // try doctor.doctorLogger();
-
-    std.debug.print("doctor end \n", .{});
 }

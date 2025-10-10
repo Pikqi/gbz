@@ -42,14 +42,14 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);
 
-    var emu = Emulator.init();
+    var emu = Emulator.initBootRom();
     // emu.initDoctorFile("doctor_main.log") catch |err| {
     //     std.log.err("Failed init doctor file {t}", .{err});
     // };
+    emu.initDoctorStdOut() catch |err| {
+        std.log.err("Failed init doctor file {t}", .{err});
+    };
     try emu.load_rom(contents);
-    // emu.initDoctorStdOut() catch |err| {
-    //     std.log.err("Failed init doctor file {t}", .{err});
-    // };
 
     try emu.run_emu();
 }
