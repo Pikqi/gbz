@@ -15,7 +15,8 @@ pub const Emulator = struct {
     cb_prefixed: bool = false,
     doctor: ?DoctorLogger = null,
     is_stopped: bool = false,
-    has_jumped: bool = false,
+    // has_jumped: bool = false,
+    jump_to: ?u16 = null,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -68,6 +69,11 @@ pub const Emulator = struct {
     }
 
     pub fn run_emu(self: *Emulator) !void {
+        if (self.doctor) |*doc| {
+            doc.log() catch |e| {
+                std.debug.print("Logging with doctor failed {t}", .{e});
+            };
+        }
         while (!self.is_stopped) {
             try self.cpu_step();
         }
@@ -101,28 +107,29 @@ pub const Emulator = struct {
 
         if (instruction.length > 1) {
             for (0..instruction.length - 1) |i| {
-                pc.* += 1;
-                instruction_params[i] = self.mem[pc.*];
+                instruction_params[i] = self.mem[pc.* + i + 1];
             }
         }
 
         if (self.cb_prefixed) {
             self.cb_prefixed = false;
-            return;
         }
-        self.has_jumped = false;
+        // self.has_jumped = false;
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
 
+        if (self.jump_to) |new_pc| {
+            pc.* = new_pc;
+            self.jump_to = null;
+        } else {
+            pc.* += instruction.length;
+        }
         if (self.doctor) |*doc| {
             if (instruction.type != .CB) {
                 doc.log() catch |e| {
                     std.debug.print("Logging with doctor failed {t}", .{e});
                 };
             }
-        }
-        if (!self.has_jumped) {
-            pc.* += 1;
         }
     }
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {

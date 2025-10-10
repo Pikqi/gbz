@@ -336,8 +336,8 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     };
 
     if (should_jump) {
-        emu.has_jumped = true;
-        emu.cpu.pc = operand.U16;
+        // emu.cpu.pc = operand.U16;
+        emu.jump_to = operand.U16;
         // TODO: Increase tcycle
         // std.debug.print("Jumped to {X}", .{emu.cpu.pc});
     } else {
@@ -360,13 +360,11 @@ pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         .NONE => true,
         else => unreachable,
     };
-    emu.has_jumped = should_jump;
     switch (operand) {
         .I8 => {
             if (should_jump) {
-                var pc: i64 = @intCast(emu.cpu.pc);
-                pc += @intCast(operand.I8);
-                emu.cpu.pc = @intCast(pc);
+                const pc: i64 = @intCast(emu.cpu.pc);
+                emu.jump_to = @intCast(pc + instruction.length + @as(i64, @intCast(operand.I8)));
                 // TODO: Increase tcycle
                 // std.debug.print("Jumped to {X}\n", .{emu.cpu.pc});
             } else {
@@ -388,7 +386,7 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U8 => {
             const value = operand.U8.*;
             var of: u1 = 0;
-            const half_carry = (value & 0xF +% 1) > 0xF;
+            const half_carry = ((value & 0xF) +% 1) > 0xF;
 
             operand.U8.*, of = @addWithOverflow(operand.U8.*, 1);
 
@@ -404,6 +402,8 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             operand.U16.*, _ = @addWithOverflow(operand.U16.*, 1);
         },
     }
+
+    flags.setFlags(instruction.flags);
 }
 pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getLeftOperandPtr(emu, instruction, instruction_params);
@@ -413,8 +413,9 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U8 => {
             var of: u1 = 0;
 
+            const half_carry = ((operand.U8.* & 0xF) -% 1) == 0xFF;
+
             operand.U8.*, of = @subWithOverflow(operand.U8.*, 1);
-            const half_carry = (operand.U8.* & 0xF -% 1) == 0;
 
             if (instruction.flags.half_carry == .DEPENDENT) {
                 flags.half_carry = half_carry;
@@ -422,13 +423,13 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             if (instruction.flags.zero == .DEPENDENT) {
                 flags.zero = operand.U8.* == 0;
             }
-            flags.sub = true;
         },
 
         .U16 => {
             operand.U16.*, _ = @subWithOverflow(operand.U16.*, 1);
         },
     }
+    flags.setFlags(instruction.flags);
 }
 
 // todo conditionally add ticks
@@ -450,15 +451,15 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     if (!should_jump) {
         return;
     }
-    emu.has_jumped = should_jump;
 
     switch (operand) {
         .U16 => {
             // TODO make emu.pushPCToStack()
-            const new_pc = pc + 1;
+            const new_pc = pc + instruction.length;
             const upper: u8 = @intCast((new_pc & 0xFF00) >> 8);
             const lower: u8 = @intCast(new_pc & 0xFF);
             emu.stackPush(upper, lower);
+            emu.jump_to = operand.U16;
         },
         else => return error.InvalidOperantType,
     }
@@ -468,8 +469,6 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
 // todo conditionally add ticks
 pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
-
-    const pc = &emu.cpu.pc;
 
     const should_ret = switch (instruction.condition) {
         .C => flags.carry,
@@ -488,8 +487,7 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     var lower: u8 = undefined;
     emu.stackPop(&upper, &lower);
 
-    pc.* = @as(u16, @intCast(upper)) << 8 | lower;
-    emu.has_jumped = true;
+    emu.jump_to = @as(u16, @intCast(upper)) << 8 | lower;
     std.debug.print("Returned\n", .{});
 }
 
@@ -515,24 +513,20 @@ pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
 }
 
 pub fn orr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
-    const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
 
     const A = emu.cpu.getU8Register(.A);
 
-    if (leftValue != .U8 or rightValue != .U8) {
+    if (rightValue != .U8) {
         std.debug.print("OR: left or right op are not u8", .{});
         return error.OperandProhibited;
     }
 
-    A.* = leftValue.U8 | rightValue.U8;
-    if (A.* == 0) {
-        flags.zero = true;
-    }
-    flags.sub = false;
-    flags.half_carry = false;
-    flags.carry = false;
+    A.* |= rightValue.U8;
+
+    flags.setFlags(instruction.flags);
+    flags.zero = A.* == 0;
 }
 
 pub fn xor(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
@@ -570,7 +564,7 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     const flags = emu.cpu.getFlagsRegister();
 
     if (instruction.leftOperand != .A) {
-        std.debug.print("CPL: left operand is not A", .{});
+        std.debug.print("CP: left operand is not A", .{});
         return error.OperandProhibited;
     }
 
@@ -581,19 +575,19 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         },
     }
 
+    flags.setFlags(instruction.flags);
+
     switch (leftValue) {
         .U8 => {
             var of: u1 = 0;
             var new_value: u8 = 0;
 
-            const half_carry = (leftValue.U8 & 0xF -% rightValue.U8 & 0xF) == 0;
-
             new_value, of = @subWithOverflow(leftValue.U8, rightValue.U8);
+            const highest_bit = (new_value & (0b1 << 7)) > 0;
 
-            flags.half_carry = half_carry;
-            flags.zero = new_value == 0;
-            flags.carry = of > 0;
-            flags.sub = true;
+            flags.half_carry = highest_bit;
+            flags.carry = highest_bit;
+            flags.zero = leftValue.U8 == rightValue.U8;
         },
 
         else => {
@@ -688,8 +682,7 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
             const lower: u8 = @intCast(pc.* & 0xFF);
             emu.stackPush(upper, lower);
             // TODO not sure about this
-            pc.* = operand.U8;
-            emu.has_jumped = true;
+            emu.jump_to = operand.U8;
         },
         else => return error.InvalidOperantType,
     }
