@@ -6,6 +6,8 @@ const OperandO = struct {
     name: ?[]u8 = null,
     immediate: ?bool = null,
     bytes: ?f32 = null,
+    increment: ?bool = null,
+    decrement: ?bool = null,
 };
 const FlagsO = struct {
     Z: []u8,
@@ -113,6 +115,18 @@ pub fn main() !void {
                 switch (instr.operands.?.len) {
                     0 => {},
                     1 => {
+                        if (instr.operands.?[0].increment) |incLeft| {
+                            if (incLeft) {
+                                i.increment = .LEFT;
+                            }
+                        }
+
+                        if (instr.operands.?[0].decrement) |decLeft| {
+                            if (decLeft) {
+                                i.decrement = .LEFT;
+                            }
+                        }
+
                         i.leftOperand = std.meta.stringToEnum(
                             InstructionMod.InstructionOperands,
                             instr.operands.?[0].name.?,
@@ -128,6 +142,28 @@ pub fn main() !void {
                         i.leftOperandPointer = !instr.operands.?[0].immediate.?;
                     },
                     2 => {
+                        if (instr.operands.?[0].increment) |incLeft| {
+                            if (incLeft) {
+                                i.increment = .LEFT;
+                            }
+                        }
+                        if (instr.operands.?[1].increment) |incRight| {
+                            if (incRight) {
+                                i.increment = .RIGHT;
+                            }
+                        }
+
+                        if (instr.operands.?[0].decrement) |decLeft| {
+                            if (decLeft) {
+                                i.decrement = .LEFT;
+                            }
+                        }
+
+                        if (instr.operands.?[1].decrement) |decRight| {
+                            if (decRight) {
+                                i.decrement = .RIGHT;
+                            }
+                        }
                         i.leftOperand = std.meta.stringToEnum(
                             InstructionMod.InstructionOperands,
                             instr.operands.?[0].name.?,
@@ -250,10 +286,10 @@ pub fn dumpDefinition(inst: Instruction, key: usize) void {
         std.debug.print(".number = 0x{X},", .{n});
     }
     if (inst.increment != .NONE) {
-        std.debug.print(".incremenet = .{t},", .{inst.increment});
+        std.debug.print(".increment = .{t},", .{inst.increment});
     }
     if (inst.decrement != .NONE) {
-        std.debug.print(".incremenet = .{t},", .{inst.decrement});
+        std.debug.print(".decrement = .{t},", .{inst.decrement});
     }
 
     std.debug.print(".length = {d},", .{inst.length});

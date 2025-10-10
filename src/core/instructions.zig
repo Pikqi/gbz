@@ -444,11 +444,12 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0x22] = Instruction{
-        .name = "LD (HL),A - 0x22",
+        .name = "LD (HL+),A - 0x22",
         .type = .LD,
         .leftOperand = .HL,
         .leftOperandPointer = true,
         .rightOperand = .A,
+        .increment = .LEFT,
         .length = 1,
         .tcycle = 2,
     };
@@ -517,11 +518,12 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0x2A] = Instruction{
-        .name = "LD A,(HL) - 0x2A",
+        .name = "LD A,(HL+) - 0x2A",
         .type = .LD,
         .leftOperand = .A,
         .rightOperand = .HL,
         .rightOperandPointer = true,
+        .increment = .RIGHT,
         .length = 1,
         .tcycle = 2,
     };
@@ -589,11 +591,12 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0x32] = Instruction{
-        .name = "LD (HL),A - 0x32",
+        .name = "LD (HL-),A - 0x32",
         .type = .LD,
         .leftOperand = .HL,
         .leftOperandPointer = true,
         .rightOperand = .A,
+        .decrement = .LEFT,
         .length = 1,
         .tcycle = 2,
     };
@@ -665,11 +668,12 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0x3A] = Instruction{
-        .name = "LD A,(HL) - 0x3A",
+        .name = "LD A,(HL-) - 0x3A",
         .type = .LD,
         .leftOperand = .A,
         .rightOperand = .HL,
         .rightOperandPointer = true,
+        .decrement = .RIGHT,
         .length = 1,
         .tcycle = 2,
     };
