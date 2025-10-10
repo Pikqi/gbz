@@ -106,7 +106,10 @@ pub fn getLeftOperandPtr(
         .NUMBER => unreachable,
         .U16 => {
             // todo: check order
-            const value: u16 = @as(u16, @intCast(instruction_params[1])) << 8 & instruction_params[0];
+            const high: u16 = instruction_params[1];
+            const low: u16 = instruction_params[0];
+            const value: u16 = (high << 8) | low;
+
             if (isPtrToMemory) {
                 return OperandPtr{ .U8 = &emu.mem[value] };
             }
@@ -166,7 +169,7 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                 }
             }
 
-            flags.half_carry = (left.* & 0xF + right & 0xF) > 0xF;
+            flags.half_carry = ((left.* & 0xF) + (right & 0xF)) > 0xF;
 
             left.*, of = @addWithOverflow(left.*, right);
             flags.zero = left.* == 0;
@@ -207,7 +210,7 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                 left.* += if (flags.carry) 1 else 0;
             }
 
-            flags.half_carry = (left.* & 0xF00 +% right & 0xF00) > 0xF00;
+            flags.half_carry = ((left.* & 0xF00) +% (right & 0xF00)) > 0xF00;
             left.*, of = @addWithOverflow(left.*, right);
             flags.sub = false;
             if (!carry_set) {
@@ -249,7 +252,7 @@ pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                 }
             }
 
-            const half_carry = (leftPtr.U8.* & 0xF -% rightValue.U8 & 0xF) == 0;
+            const half_carry = ((leftPtr.U8.* & 0xF) -% (rightValue.U8 & 0xF)) > leftPtr.U8.*;
 
             leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, rightValue.U8);
 
@@ -541,13 +544,9 @@ pub fn xor(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         return error.OperandProhibited;
     }
 
+    flags.setFlags(instruction.flags);
     A.* = leftValue.U8 ^ rightValue.U8;
-    if (A.* == 0) {
-        flags.zero = true;
-    }
-    flags.sub = false;
-    flags.half_carry = false;
-    flags.carry = false;
+    flags.zero = A.* == 0;
 }
 
 pub fn scf(emu: *Emulator) !void {
@@ -585,9 +584,11 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
             new_value, of = @subWithOverflow(leftValue.U8, rightValue.U8);
             const highest_bit = (new_value & (0b1 << 7)) > 0;
 
-            flags.half_carry = highest_bit;
+            const half_carry = ((leftValue.U8 & 0xF) -% (rightValue.U8 & 0xF)) > leftValue.U8;
+
             flags.carry = highest_bit;
             flags.zero = leftValue.U8 == rightValue.U8;
+            flags.half_carry = half_carry;
         },
 
         else => {
