@@ -294,11 +294,15 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
                 },
                 else => unreachable,
             }
-            std.log.info("Loaded {X} into {s}", .{ rightValue.U8, @tagName(instruction.leftOperand) });
+            // std.log.info("Loaded {X} into {s}", .{ rightValue.U8, @tagName(instruction.leftOperand) });
         },
         .U16 => {
             leftPtr.U16.* = rightValue.U16;
-            std.log.info("Loaded {X} into {s}", .{ rightValue.U16, @tagName(instruction.leftOperand) });
+            if (instruction.leftOperandPointer) {
+                // std.log.info("Loaded {X} into {s}", .{ rightValue.U16, leftPtr.U16.* });
+            } else {
+                // std.log.info("Loaded {X} into {s}", .{ rightValue.U16, @tagName(instruction.leftOperand) });
+            }
         },
     }
 
@@ -320,6 +324,12 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         },
         else => {},
     }
+    std.debug.print("loaded {t}({x:02}) into {t}({x:02})\n", .{
+        instruction.rightOperand,
+        if (rightValue == .U16) rightValue.U16 else if (rightValue == .U8) rightValue.U8 else unreachable,
+        instruction.leftOperand,
+        if (leftPtr == .U16) leftPtr.U16.* else leftPtr.U8.*,
+    });
 }
 
 // todo conditionally add ticks
@@ -405,8 +415,6 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             operand.U16.*, _ = @addWithOverflow(operand.U16.*, 1);
         },
     }
-
-    flags.setFlags(instruction.flags);
 }
 pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getLeftOperandPtr(emu, instruction, instruction_params);
@@ -432,7 +440,6 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             operand.U16.*, _ = @subWithOverflow(operand.U16.*, 1);
         },
     }
-    flags.setFlags(instruction.flags);
 }
 
 // todo conditionally add ticks
@@ -466,7 +473,6 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
         },
         else => return error.InvalidOperantType,
     }
-    std.debug.print("Called\n", .{});
 }
 
 // todo conditionally add ticks
@@ -491,7 +497,7 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     emu.stackPop(&upper, &lower);
 
     emu.jump_to = @as(u16, @intCast(upper)) << 8 | lower;
-    std.debug.print("Returned\n", .{});
+    // std.debug.print("Returned\n", .{});
 }
 
 pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
@@ -507,12 +513,7 @@ pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     }
 
     A.* = leftValue.U8 & rightValue.U8;
-    if (A.* == 0) {
-        flags.zero = true;
-    }
-    flags.sub = false;
-    flags.half_carry = true;
-    flags.carry = false;
+    flags.zero = A.* == 0;
 }
 
 pub fn orr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
@@ -528,7 +529,6 @@ pub fn orr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     A.* |= rightValue.U8;
 
-    flags.setFlags(instruction.flags);
     flags.zero = A.* == 0;
 }
 
@@ -544,7 +544,6 @@ pub fn xor(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         return error.OperandProhibited;
     }
 
-    flags.setFlags(instruction.flags);
     A.* = leftValue.U8 ^ rightValue.U8;
     flags.zero = A.* == 0;
 }
@@ -573,8 +572,6 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
             return error.OperandProhibited;
         },
     }
-
-    flags.setFlags(instruction.flags);
 
     switch (leftValue) {
         .U8 => {
@@ -611,12 +608,13 @@ pub fn nop() void {
 }
 
 //todo check
-pub fn stop(emu: *Emulator) !void {
+pub fn stop(emu: *Emulator) void {
     emu.is_stopped = true;
 }
 
 pub fn halt(emu: *Emulator) void {
     emu.cpu.is_halted = true;
+    std.debug.print("Halted", .{});
 }
 
 pub fn daa(emu: *Emulator) void {
@@ -639,6 +637,7 @@ pub fn daa(emu: *Emulator) void {
     } else {
         a.*, of = @addWithOverflow(a.*, offset);
     }
+    flags.zero = a.* == 0;
     flags.carry = of > 0;
 }
 
@@ -647,6 +646,8 @@ pub fn ccf(emu: *Emulator) void {
 }
 
 pub fn push(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
+    // hack to not push
+    emu.cpu.getFlagsRegister().rest = 0;
     const operand = try getOperandValue(emu, true, instruction, null);
 
     switch (operand) {
@@ -690,10 +691,14 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
 }
 pub fn ei(emu: *Emulator) void {
     _ = emu; // autofix
+    std.debug.print("stop because ei\n", .{});
+    // stop(emu);
     //todo interupts
 }
 pub fn di(emu: *Emulator) void {
     _ = emu; // autofix
+    std.debug.print("stop because di\n", .{});
+    // stop(emu);
     //todo interupts
 }
 
@@ -704,35 +709,36 @@ pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     if (leftPtr != .U8) {
         return;
     }
+    const prev_carry = @intFromBool(flags.carry);
     const operand = leftPtr.U8;
-    const a0: u1 = @intCast(operand.* & 0b1);
-    const a7: u1 = @intCast(operand.* >> 7);
+    const b0: u1 = @intCast(operand.* & 0b1);
+    const b7: u1 = @intCast(operand.* >> 7);
 
     switch (instruction.type) {
         .RL => {
             operand.*, _ = @shlWithOverflow(operand.*, 1);
-            operand.* |= a7;
+            operand.* |= b7;
         },
         .RLC => {
             operand.*, _ = @shlWithOverflow(operand.*, 1);
-            operand.* |= a7;
-            flags.carry = a7 > 0;
+            operand.* |= b7;
+            flags.carry = b7 > 0;
         },
         .RR => {
             operand.* >>= 1;
-            operand.* ^= 0b10000000;
-            operand.* |= @as(u8, @intCast(a0)) << 7;
+            operand.* |= (@as(u8, @intCast(prev_carry)) << 7);
+            flags.carry = b0 > 0;
         },
         .RRC => {
             operand.* >>= 1;
-            operand.* ^= 0b10000000;
-            operand.* |= @as(u8, @intCast(a0)) << 7;
-            flags.carry = a0 > 0;
+            flags.carry = b0 > 0;
+            flags.carry = b0 > 0;
         },
         else => {
             return error.OperandProhibited;
         },
     }
+    flags.zero = operand.* == 0;
 }
 
 pub fn sla(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
@@ -745,7 +751,6 @@ pub fn sla(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const operand = leftPtr.U8;
 
     operand.*, const of = @shlWithOverflow(operand.*, 1);
-    flags.setFlags(instruction.flags);
     flags.carry = of == 1;
     flags.zero = operand.* == 0;
 }
@@ -764,7 +769,6 @@ pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     operand.* >>= 1;
     operand.* &= highest_bit;
 
-    flags.setFlags(instruction.flags);
     flags.carry = lowest_bit > 0;
     flags.zero = operand.* == 0;
 }
@@ -777,11 +781,10 @@ pub fn srl(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         return error.OperatorIsNotAPointer;
     }
     const operand = leftPtr.U8;
-    const lowest_bit = operand.* | 1;
+    const lowest_bit = operand.* & 1;
 
     operand.* >>= 1;
 
-    flags.setFlags(instruction.flags);
     flags.carry = lowest_bit > 0;
     flags.zero = operand.* == 0;
 }
@@ -802,7 +805,6 @@ pub fn bit(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     }
     const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
     const b: u8 = rightValue.U8 & selection_bit;
-    flags.setFlags(instruction.flags);
     flags.zero = b == 0;
 }
 
@@ -820,13 +822,11 @@ pub fn swap(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const new = (lower << 4) | higher >> 4;
 
     value.* = new;
-    flags.setFlags(instruction.flags);
     flags.*.zero = operand_ptr.U8.* == 0;
 }
 
 pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
-    const flags = emu.cpu.getFlagsRegister();
 
     var right_value_ptr: *u8 = undefined;
     // if its a ptr to memory then it must be (HL)
@@ -850,13 +850,11 @@ pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     var mask: u8 = 0xFF;
     mask ^= selection_bit;
     right_value_ptr.* &= mask;
-    flags.setFlags(instruction.flags);
 }
 
 pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
-    const flags = emu.cpu.getFlagsRegister();
 
     var right_value_ptr: *u8 = undefined;
     if (instruction.rightOperandPointer) {
@@ -877,5 +875,4 @@ pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
 
     right_value_ptr.* |= selection_bit;
-    flags.setFlags(instruction.flags);
 }

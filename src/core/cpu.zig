@@ -23,6 +23,7 @@ pub const FlagsRegister = packed struct(u8) {
         self.zero = setUnsetFlag(self.zero, f.zero);
         self.half_carry = setUnsetFlag(self.half_carry, f.half_carry);
         self.sub = setUnsetFlag(self.sub, f.sub);
+        self.rest = 0;
     }
     fn setUnsetFlag(f: bool, flag: InstructionFlag) bool {
         return switch (flag) {

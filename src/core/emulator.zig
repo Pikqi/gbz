@@ -17,6 +17,7 @@ pub const Emulator = struct {
     is_stopped: bool = false,
     // has_jumped: bool = false,
     jump_to: ?u16 = null,
+    steps: usize = 0,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -29,6 +30,9 @@ pub const Emulator = struct {
             .cpu = Cpu.initBootRom(),
         };
         emu.mem[0xFF44] = 0x90;
+        for (emu.mem[0xFF80 .. 0xFF80 + 127]) |*b| {
+            b.* = 0xFF;
+        }
         return emu;
     }
     pub fn initDoctorStdOut(self: *Emulator) !void {
@@ -97,7 +101,7 @@ pub const Emulator = struct {
         const instruction_set = if (self.cb_prefixed) prefixed_instructions else instructions;
 
         if (instruction_set[instruction_byte]) |instr| {
-            std.debug.print("{s}\n", .{instr.name});
+            // std.debug.print("{s}\n", .{instr.name});
             instruction = instr;
         } else {
             std.log.warn("{X:02} not defined\n", .{instruction_byte});
@@ -117,6 +121,7 @@ pub const Emulator = struct {
         // self.has_jumped = false;
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
+        self.cpu.getFlagsRegister().setFlags(instruction.flags);
 
         if (self.jump_to) |new_pc| {
             pc.* = new_pc;
@@ -131,11 +136,15 @@ pub const Emulator = struct {
                 };
             }
         }
+        self.steps += 1;
+        // if (self.steps == 31459) {
+        //     self.is_stopped = true;
+        // }
     }
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
         return switch (i.type) {
             .NOP => implementations.nop(),
-            .STOP => try implementations.stop(self),
+            .STOP => implementations.stop(self),
             .HALT => implementations.halt(self),
             .LD => try implementations.ld(self, i, instruction_params),
             .ADD, .ADC => try implementations.add(self, i, instruction_params),
