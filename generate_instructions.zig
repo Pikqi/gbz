@@ -30,7 +30,7 @@ const JsonStruct = struct {
     cbprefixed: []InstructionO,
 };
 
-const cb = true;
+const cb = false;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -101,7 +101,17 @@ pub fn main() !void {
                 i.number = try std.fmt.parseInt(u8, instr.operands.?[0].name.?[1..], 16);
                 i.leftOperand = .NUMBER;
             },
-            .RET, .JR, .JP, .CALL => {
+            // ret has only a condition
+            .RET,
+            => {
+                if (instr.operands.?.len == 1) {
+                    i.condition = std.meta.stringToEnum(
+                        InstructionMod.InstructionCondition,
+                        instr.operands.?[0].name.?,
+                    ) orelse .NONE;
+                }
+            },
+            .JR, .JP, .CALL => {
                 if (instr.operands.?.len == 1) {
                     i.leftOperand = std.meta.stringToEnum(
                         InstructionMod.InstructionOperands,

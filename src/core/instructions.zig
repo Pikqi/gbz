@@ -1958,8 +1958,9 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0xC0] = Instruction{
-        .name = "RET  - 0xC0",
+        .name = "RET NZ,  - 0xC0",
         .type = .RET,
+        .condition = .NZ,
         .length = 1,
         .tcycle = 5,
         .alt_tcycle = 2,
@@ -2029,8 +2030,9 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0xC8] = Instruction{
-        .name = "RET  - 0xC8",
+        .name = "RET Z,  - 0xC8",
         .type = .RET,
+        .condition = .Z,
         .length = 1,
         .tcycle = 5,
         .alt_tcycle = 2,
@@ -2098,8 +2100,9 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0xD0] = Instruction{
-        .name = "RET  - 0xD0",
+        .name = "RET NC,  - 0xD0",
         .type = .RET,
+        .condition = .NC,
         .length = 1,
         .tcycle = 5,
         .alt_tcycle = 2,
@@ -2155,15 +2158,15 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 16 - 0xD7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x16,
+        .number = 0x10,
         .length = 1,
         .tcycle = 4,
     };
 
     t_instructions[0xD8] = Instruction{
-        .name = "RET C - 0xD8",
+        .name = "RET C,  - 0xD8",
         .type = .RET,
-        .leftOperand = .C,
+        .condition = .C,
         .length = 1,
         .tcycle = 5,
         .alt_tcycle = 2,
@@ -2210,7 +2213,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 24 - 0xDF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x24,
+        .number = 0x18,
         .length = 1,
         .tcycle = 4,
     };
@@ -2267,7 +2270,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 32 - 0xE7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x32,
+        .number = 0x20,
         .length = 1,
         .tcycle = 4,
     };
@@ -2314,7 +2317,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 40 - 0xEF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x40,
+        .number = 0x28,
         .length = 1,
         .tcycle = 4,
     };
@@ -2379,7 +2382,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 48 - 0xF7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x48,
+        .number = 0x30,
         .length = 1,
         .tcycle = 4,
     };
@@ -2432,7 +2435,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 56 - 0xFF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x56,
+        .number = 0x38,
         .length = 1,
         .tcycle = 4,
     };
