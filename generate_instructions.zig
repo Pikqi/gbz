@@ -30,6 +30,8 @@ const JsonStruct = struct {
     cbprefixed: []InstructionO,
 };
 
+const cb = true;
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const alloc = gpa.allocator();
@@ -46,13 +48,20 @@ pub fn main() !void {
     var map = std.AutoArrayHashMap(usize, Instruction).init(alloc);
     defer map.deinit();
 
-    for (r.value.unprefixed) |instr| {
+    const instruction_set = if (cb) r.value.cbprefixed else r.value.unprefixed;
+
+    for (instruction_set) |instr| {
         var i = Instruction{
             .name = instr.mnemonic,
             .length = @intFromFloat(instr.bytes),
             .type = .UNIMPLEMENTED,
             .tcycle = @intFromFloat(instr.cycles[0] / 4),
         };
+        // Cb prefixed instructions are tagged as 2 bytes long, and 0xCB is tagged as 1 byte long
+        // which makes cb prefixed instuctions look like 3 bytes long
+        if (cb) {
+            i.length -= 1;
+        }
         if (instr.cycles.len == 2) {
             i.alt_tcycle = @intFromFloat(instr.cycles[1] / 4);
         }

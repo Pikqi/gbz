@@ -2155,7 +2155,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 16 - 0xD7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x10,
+        .number = 0x16,
         .length = 1,
         .tcycle = 4,
     };
@@ -2210,7 +2210,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 24 - 0xDF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x18,
+        .number = 0x24,
         .length = 1,
         .tcycle = 4,
     };
@@ -2267,7 +2267,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 32 - 0xE7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x20,
+        .number = 0x32,
         .length = 1,
         .tcycle = 4,
     };
@@ -2314,7 +2314,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 40 - 0xEF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x28,
+        .number = 0x40,
         .length = 1,
         .tcycle = 4,
     };
@@ -2379,7 +2379,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 48 - 0xF7",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x30,
+        .number = 0x48,
         .length = 1,
         .tcycle = 4,
     };
@@ -2432,7 +2432,7 @@ pub const instructions: InstructionArray = blk: {
         .name = "RST 56 - 0xFF",
         .type = .RST,
         .leftOperand = .NUMBER,
-        .number = 0x38,
+        .number = 0x56,
         .length = 1,
         .tcycle = 4,
     };
@@ -2448,7 +2448,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC B - 0x0",
         .type = .RLC,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2457,7 +2457,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC C - 0x1",
         .type = .RLC,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2466,7 +2466,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC D - 0x2",
         .type = .RLC,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2475,7 +2475,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC E - 0x3",
         .type = .RLC,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2484,7 +2484,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC H - 0x4",
         .type = .RLC,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2493,7 +2493,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC L - 0x5",
         .type = .RLC,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2503,7 +2503,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .RLC,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2512,7 +2512,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RLC A - 0x7",
         .type = .RLC,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2521,7 +2521,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC B - 0x8",
         .type = .RRC,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2530,7 +2530,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC C - 0x9",
         .type = .RRC,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2539,7 +2539,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC D - 0xA",
         .type = .RRC,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2548,7 +2548,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC E - 0xB",
         .type = .RRC,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2557,7 +2557,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC H - 0xC",
         .type = .RRC,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2566,7 +2566,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC L - 0xD",
         .type = .RRC,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2576,7 +2576,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .RRC,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2585,7 +2585,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RRC A - 0xF",
         .type = .RRC,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2594,7 +2594,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL B - 0x10",
         .type = .RL,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2603,7 +2603,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL C - 0x11",
         .type = .RL,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2612,7 +2612,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL D - 0x12",
         .type = .RL,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2621,7 +2621,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL E - 0x13",
         .type = .RL,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2630,7 +2630,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL H - 0x14",
         .type = .RL,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2639,7 +2639,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL L - 0x15",
         .type = .RL,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2649,7 +2649,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .RL,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2658,7 +2658,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RL A - 0x17",
         .type = .RL,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2667,7 +2667,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR B - 0x18",
         .type = .RR,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2676,7 +2676,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR C - 0x19",
         .type = .RR,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2685,7 +2685,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR D - 0x1A",
         .type = .RR,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2694,7 +2694,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR E - 0x1B",
         .type = .RR,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2703,7 +2703,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR H - 0x1C",
         .type = .RR,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2712,7 +2712,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR L - 0x1D",
         .type = .RR,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2722,7 +2722,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .RR,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2731,7 +2731,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "RR A - 0x1F",
         .type = .RR,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2740,7 +2740,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA B - 0x20",
         .type = .SLA,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2749,7 +2749,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA C - 0x21",
         .type = .SLA,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2758,7 +2758,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA D - 0x22",
         .type = .SLA,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2767,7 +2767,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA E - 0x23",
         .type = .SLA,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2776,7 +2776,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA H - 0x24",
         .type = .SLA,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2785,7 +2785,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA L - 0x25",
         .type = .SLA,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2795,7 +2795,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .SLA,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2804,7 +2804,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SLA A - 0x27",
         .type = .SLA,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2813,7 +2813,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA B - 0x28",
         .type = .SRA,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2822,7 +2822,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA C - 0x29",
         .type = .SRA,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2831,7 +2831,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA D - 0x2A",
         .type = .SRA,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2840,7 +2840,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA E - 0x2B",
         .type = .SRA,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2849,7 +2849,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA H - 0x2C",
         .type = .SRA,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2858,7 +2858,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA L - 0x2D",
         .type = .SRA,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2868,7 +2868,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .SRA,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2877,7 +2877,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRA A - 0x2F",
         .type = .SRA,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2886,7 +2886,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP B - 0x30",
         .type = .SWAP,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2895,7 +2895,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP C - 0x31",
         .type = .SWAP,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2904,7 +2904,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP D - 0x32",
         .type = .SWAP,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2913,7 +2913,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP E - 0x33",
         .type = .SWAP,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2922,7 +2922,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP H - 0x34",
         .type = .SWAP,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2931,7 +2931,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP L - 0x35",
         .type = .SWAP,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2941,7 +2941,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .SWAP,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2950,7 +2950,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SWAP A - 0x37",
         .type = .SWAP,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNSET, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2959,7 +2959,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL B - 0x38",
         .type = .SRL,
         .leftOperand = .B,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2968,7 +2968,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL C - 0x39",
         .type = .SRL,
         .leftOperand = .C,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2977,7 +2977,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL D - 0x3A",
         .type = .SRL,
         .leftOperand = .D,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2986,7 +2986,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL E - 0x3B",
         .type = .SRL,
         .leftOperand = .E,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -2995,7 +2995,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL H - 0x3C",
         .type = .SRL,
         .leftOperand = .H,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3004,7 +3004,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL L - 0x3D",
         .type = .SRL,
         .leftOperand = .L,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3014,7 +3014,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .type = .SRL,
         .leftOperand = .HL,
         .leftOperandPointer = true,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3023,7 +3023,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .name = "SRL A - 0x3F",
         .type = .SRL,
         .leftOperand = .A,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .UNSET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3034,7 +3034,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3045,7 +3045,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3056,7 +3056,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3067,7 +3067,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3078,7 +3078,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3089,7 +3089,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3101,7 +3101,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3112,7 +3112,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3123,7 +3123,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3134,7 +3134,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3145,7 +3145,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3156,7 +3156,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3167,7 +3167,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3178,7 +3178,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3190,7 +3190,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3201,7 +3201,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3212,7 +3212,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3223,7 +3223,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3234,7 +3234,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3245,7 +3245,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3256,7 +3256,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3267,7 +3267,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3279,7 +3279,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3290,7 +3290,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3301,7 +3301,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3312,7 +3312,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3323,7 +3323,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3334,7 +3334,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3345,7 +3345,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3356,7 +3356,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3368,7 +3368,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3379,7 +3379,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3390,7 +3390,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3401,7 +3401,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3412,7 +3412,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3423,7 +3423,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3434,7 +3434,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3445,7 +3445,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3457,7 +3457,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3468,7 +3468,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3479,7 +3479,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3490,7 +3490,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3501,7 +3501,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3512,7 +3512,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3523,7 +3523,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3534,7 +3534,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3546,7 +3546,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3557,7 +3557,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3568,7 +3568,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3579,7 +3579,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3590,7 +3590,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3601,7 +3601,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3612,7 +3612,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3623,7 +3623,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3635,7 +3635,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3646,7 +3646,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3657,7 +3657,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3668,7 +3668,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3679,7 +3679,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3690,7 +3690,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3701,7 +3701,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3712,7 +3712,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3724,7 +3724,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 3,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3735,7 +3735,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
         .flags = .{ .carry = .UNMODIFED, .half_carry = .SET, .sub = .UNSET, .zero = .DEPENDENT },
     };
@@ -3746,7 +3746,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3756,7 +3756,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3766,7 +3766,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3776,7 +3776,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3786,7 +3786,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3796,7 +3796,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3807,7 +3807,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -3817,7 +3817,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3827,7 +3827,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3837,7 +3837,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3847,7 +3847,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3857,7 +3857,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3867,7 +3867,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3877,7 +3877,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3888,7 +3888,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -3898,7 +3898,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3908,7 +3908,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3918,7 +3918,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3928,7 +3928,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3938,7 +3938,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3948,7 +3948,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3958,7 +3958,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3969,7 +3969,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -3979,7 +3979,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3989,7 +3989,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -3999,7 +3999,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4009,7 +4009,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4019,7 +4019,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4029,7 +4029,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4039,7 +4039,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4050,7 +4050,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4060,7 +4060,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4070,7 +4070,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4080,7 +4080,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4090,7 +4090,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4100,7 +4100,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4110,7 +4110,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4120,7 +4120,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4131,7 +4131,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4141,7 +4141,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4151,7 +4151,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4161,7 +4161,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4171,7 +4171,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4181,7 +4181,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4191,7 +4191,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4201,7 +4201,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4212,7 +4212,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4222,7 +4222,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4232,7 +4232,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4242,7 +4242,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4252,7 +4252,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4262,7 +4262,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4272,7 +4272,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4282,7 +4282,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4293,7 +4293,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4303,7 +4303,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4313,7 +4313,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4323,7 +4323,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4333,7 +4333,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4343,7 +4343,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4353,7 +4353,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4363,7 +4363,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4374,7 +4374,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4384,7 +4384,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4394,7 +4394,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4404,7 +4404,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4414,7 +4414,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4424,7 +4424,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4434,7 +4434,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4444,7 +4444,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4455,7 +4455,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4465,7 +4465,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x0,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4475,7 +4475,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4485,7 +4485,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4495,7 +4495,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4505,7 +4505,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4515,7 +4515,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4525,7 +4525,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4536,7 +4536,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4546,7 +4546,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x1,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4556,7 +4556,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4566,7 +4566,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4576,7 +4576,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4586,7 +4586,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4596,7 +4596,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4606,7 +4606,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4617,7 +4617,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4627,7 +4627,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x2,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4637,7 +4637,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4647,7 +4647,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4657,7 +4657,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4667,7 +4667,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4677,7 +4677,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4687,7 +4687,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4698,7 +4698,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4708,7 +4708,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x3,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4718,7 +4718,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4728,7 +4728,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4738,7 +4738,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4748,7 +4748,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4758,7 +4758,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4768,7 +4768,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4779,7 +4779,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4789,7 +4789,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x4,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4799,7 +4799,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4809,7 +4809,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4819,7 +4819,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4829,7 +4829,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4839,7 +4839,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4849,7 +4849,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4860,7 +4860,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4870,7 +4870,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x5,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4880,7 +4880,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4890,7 +4890,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4900,7 +4900,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4910,7 +4910,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4920,7 +4920,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4930,7 +4930,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4941,7 +4941,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -4951,7 +4951,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x6,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4961,7 +4961,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .B,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4971,7 +4971,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .C,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4981,7 +4981,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .D,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -4991,7 +4991,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .E,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -5001,7 +5001,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .H,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -5011,7 +5011,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .L,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
@@ -5022,7 +5022,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .rightOperand = .HL,
         .rightOperandPointer = true,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 4,
     };
 
@@ -5032,7 +5032,7 @@ pub const prefixed_instructions: InstructionArray = blk: {
         .leftOperand = .NUMBER,
         .rightOperand = .A,
         .number = 0x7,
-        .length = 2,
+        .length = 1,
         .tcycle = 2,
     };
 
