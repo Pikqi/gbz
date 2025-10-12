@@ -180,16 +180,17 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U16 => {
             // 0xE8
             if (rightValue == .I8) {
-                var l: i32 = @intCast(leftPtr.U16.*);
-                const r: i32 = @intCast(rightValue.I8);
-                l += r;
-                if (l < 0) {
-                    @panic("idk fix me 0xE8");
+                if (rightValue.I8 >= 0) {
+                    leftPtr.U16.* +%= @intCast(rightValue.I8);
+                } else {
+                    var l: i17 = @intCast(leftPtr.U16.*);
+                    const r: i17 = @intCast(rightValue.I8);
+                    l +%= r;
+                    if (l < 0) {
+                        l += std.math.maxInt(i17);
+                    }
+                    leftPtr.U16.* = @intCast(l);
                 }
-                if (l > std.math.pow(i32, 2, 15)) {
-                    @panic("idk fix me 0xE8");
-                }
-                leftPtr.U16.* = @intCast(l);
                 return;
             }
             const left = leftPtr.U16;
@@ -563,11 +564,10 @@ pub fn cp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
             var new_value: u8 = 0;
 
             new_value, of = @subWithOverflow(leftValue.U8, rightValue.U8);
-            const highest_bit = (new_value & (0b1 << 7)) > 0;
 
             const half_carry = ((leftValue.U8 & 0xF) -% (rightValue.U8 & 0xF)) > leftValue.U8;
 
-            flags.carry = highest_bit;
+            flags.carry = new_value > leftValue.U8;
             flags.zero = leftValue.U8 == rightValue.U8;
             flags.half_carry = half_carry;
         },
@@ -611,11 +611,11 @@ pub fn daa(emu: *Emulator) void {
         offset |= 0x06;
     }
 
-    if ((!flags.sub and a.* > 0x99) or flags.half_carry) {
+    if ((!flags.sub and a.* > 0x99) or flags.carry) {
         offset |= 0x60;
+        flags.carry = true;
     }
 
-    flags.half_carry = false;
     var of: u1 = 0;
     if (flags.sub) {
         a.*, of = @subWithOverflow(a.*, offset);
@@ -623,7 +623,6 @@ pub fn daa(emu: *Emulator) void {
         a.*, of = @addWithOverflow(a.*, offset);
     }
     flags.zero = a.* == 0;
-    flags.carry = of > 0;
 }
 
 pub fn ccf(emu: *Emulator) void {

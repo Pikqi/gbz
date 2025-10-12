@@ -7,19 +7,12 @@ const WRAM_SIZE = 0x1000;
 const ECHO_SIZE = 0x1DFF;
 const SAT_SIZE = 0xFE9F - 0xFE00;
 const HRAM_SIZE = 0xFFFE - 0xFF80;
+const MEM_SIZE = 0x10000;
 
 pub const Memory = struct {
-    mem: [0xFFFF]u8 = undefined,
-    rom_bank: [ROM_BANK_SIZE]u8 = undefined,
-    rom_bank_switchable: [ROM_BANK_SIZE]u8 = undefined,
-    vram: [VRAM_SIZE]u8 = undefined,
-    eram: [ERAM_SIZE]u8 = undefined,
-    wram0: [WRAM_SIZE]u8 = undefined,
-    wramN: [WRAM_SIZE]u8 = undefined,
-    echo_ram: [WRAM_SIZE]u8 = undefined,
-    sat: [SAT_SIZE]u8 = undefined,
-    hram: [HRAM_SIZE]u8 = undefined,
-    ie: u8 = 0,
+    mem: [MEM_SIZE]u8 = undefined,
+    rom_bank_selected: u8 = 0,
+    logs_enabled: bool = false,
 
     pub fn read(self: *const Memory, addrs: usize) !u8 {
         if (addrs >= self.mem.len) {
@@ -40,7 +33,9 @@ pub const Memory = struct {
         }
 
         self.mem[addrs] = value;
-        std.debug.print("{X:02} written to {X:04}\n", .{ value, addrs });
+        if (self.logs_enabled) {
+            std.debug.print("{X:02} written to {X:04}\n", .{ value, addrs });
+        }
     }
     pub fn getSlice(self: *Memory, start: usize, end: usize) ![]u8 {
         if (start > end) {
@@ -51,5 +46,9 @@ pub const Memory = struct {
         }
 
         return self.mem[start..end];
+    }
+
+    pub fn zero(self: *Memory) void {
+        self.mem = std.mem.zeroes([0x10000]u8);
     }
 };

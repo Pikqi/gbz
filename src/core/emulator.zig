@@ -10,6 +10,11 @@ const Memory = @import("mmu.zig").Memory;
 
 pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
+const LastInstruction = struct {
+    id: u8,
+    prefixed: bool = false,
+    params: [2]u8,
+};
 pub const Emulator = struct {
     cpu: Cpu,
     mem: Memory = Memory{},
@@ -18,6 +23,7 @@ pub const Emulator = struct {
     is_stopped: bool = false,
     jump_to: ?u16 = null,
     steps: usize = 0,
+    last_instructinon: ?LastInstruction = null,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -29,6 +35,7 @@ pub const Emulator = struct {
         var emu = Emulator{
             .cpu = Cpu.initBootRom(),
         };
+        emu.mem.zero();
         emu.mem.write(0xFF44, 0x90) catch unreachable;
         return emu;
     }
@@ -72,6 +79,14 @@ pub const Emulator = struct {
     }
 
     pub fn run_emu(self: *Emulator) !void {
+        errdefer {
+            if (self.last_instructinon) |last| {
+                std.debug.print("Last Instruction before error:\n", .{});
+                const instruction_set = if (last.prefixed) prefixed_instructions else instructions;
+                instruction_set[last.id].?.print();
+                std.debug.print("params: {X}\n", .{last.params});
+            }
+        }
         if (self.doctor) |*doc| {
             doc.log() catch |e| {
                 std.debug.print("Logging with doctor failed {t}", .{e});
@@ -114,9 +129,11 @@ pub const Emulator = struct {
             }
         }
 
+        self.last_instructinon = .{ .id = instruction_byte, .prefixed = self.cb_prefixed, .params = instruction_params };
         if (self.cb_prefixed) {
             self.cb_prefixed = false;
         }
+
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
         self.cpu.getFlagsRegister().setFlags(instruction.flags);
@@ -135,9 +152,9 @@ pub const Emulator = struct {
             }
         }
         self.steps += 1;
-        if (self.steps == 31459) {
-            self.is_stopped = true;
-        }
+        // if (self.steps == 31459) {
+        //     self.is_stopped = true;
+        // }
     }
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
         return switch (i.type) {
