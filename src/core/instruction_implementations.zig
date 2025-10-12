@@ -116,7 +116,7 @@ pub fn getLeftOperandPtr(
             unreachable;
         },
         .U8 => {
-            const value: u16 = @intCast(instruction_params[1]);
+            const value: u16 = @intCast(instruction_params[0]);
             if (isPtrToMemory and has_offset) {
                 return OperandPtr{ .U8 = try emu.mem.readPtr(offset + value) };
             }
