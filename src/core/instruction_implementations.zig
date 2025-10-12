@@ -593,6 +593,7 @@ pub fn nop() void {
 
 //todo check
 pub fn stop(emu: *Emulator) void {
+    std.debug.print("stop instruction", .{});
     emu.is_stopped = true;
 }
 
