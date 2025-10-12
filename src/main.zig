@@ -38,7 +38,8 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 
 fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     // const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
-    const file = try std.fs.cwd().openFile("roms/cpu_instrs/individual/01-special.gb", .{});
+    const file_name = "roms/cpu_instrs/individual/01-special.gb";
+    const file = try std.fs.cwd().openFile(file_name, .{});
     const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);
 
@@ -46,6 +47,9 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     // emu.initDoctorFile("doctor_main.log") catch |err| {
     //     std.log.err("Failed init doctor file {t}", .{err});
     // };
+    var c = try Cartridge.loadFromFile(file_name, alloc);
+    defer c.destroy();
+    c.ch.print();
     emu.initDoctorStdOut() catch |err| {
         std.log.err("Failed init doctor file {t}", .{err});
     };

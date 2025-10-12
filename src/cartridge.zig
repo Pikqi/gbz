@@ -24,7 +24,7 @@ const CartridgeHeader = struct {
         std.debug.print("Name: {s}\n", .{self.name});
         std.debug.print("Number of rom banks: {d}\n", .{self.rom_banks});
         std.debug.print("type: {}\n", .{self.cartridge_type});
-        std.debug.print("Ram size: {d} banks of 8 KiB each\n", .{self.rom_banks});
+        std.debug.print("Ram size: {d} banks of 8 KiB each\n", .{self.ram_banks});
     }
 };
 
@@ -70,7 +70,6 @@ pub const Cartridge = struct {
 
         var c = Cartridge{ .contents = contents, .alloc = alloc, .ch = undefined };
         try c.parseHeader();
-        c.ch.print();
         return c;
     }
     fn parseHeader(self: *Cartridge) !void {

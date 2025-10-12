@@ -20,13 +20,10 @@ pub const DoctorLogger = struct {
 
     pub fn log(self: *DoctorLogger) !void {
         const pc = self.emu.cpu.pc;
-        if (pc >= self.emu.mem.len - 4) {
+        if (pc >= self.emu.mem.mem.len - 4) {
             return;
         }
-        const pcmem1 = self.emu.mem[pc];
-        const pcmem2 = self.emu.mem[pc + 1];
-        const pcmem3 = self.emu.mem[pc + 2];
-        const pcmem4 = self.emu.mem[pc + 3];
+        const pcmem = try self.emu.mem.getSlice(pc, pc + 4);
         const c = &self.emu.cpu;
 
         try self.file_writer.interface.print("A:{X:02} F:{X:02} B:{X:02} C:{X:02} D:{X:02} E:{X:02} H:{X:02} L:{X:02} SP:{X:04} PC:{X:04} PCMEM:{X:02},{X:02},{X:02},{X:02}\n", .{
@@ -40,10 +37,10 @@ pub const DoctorLogger = struct {
             c.getU8Register(.L).*,
             c.getU16Register(.SP).*,
             pc,
-            pcmem1,
-            pcmem2,
-            pcmem3,
-            pcmem4,
+            pcmem[0],
+            pcmem[1],
+            pcmem[2],
+            pcmem[3],
         });
         try self.file_writer.interface.flush();
     }

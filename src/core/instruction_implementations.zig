@@ -38,7 +38,7 @@ const InstructionError = error{
     OperandProhibited,
 };
 
-pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: ?[2]u8) GetOperandValueError!OperandValue {
+pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.Instruction, instruction_params: ?[2]u8) !OperandValue {
     var err: ?GetOperandValueError = null;
 
     const operandType = if (left) instruction.leftOperand else instruction.rightOperand;
@@ -67,10 +67,10 @@ pub fn getOperandValue(emu: *Emulator, left: bool, instruction: InstructionsMod.
 
         switch (operandValue) {
             .U8 => {
-                operandValue = OperandValue{ .U8 = emu.mem[offset + @as(u16, @intCast(operandValue.U8))] };
+                operandValue = OperandValue{ .U8 = try emu.mem.read(offset + @as(u16, @intCast(operandValue.U8))) };
             },
             .U16 => {
-                operandValue = OperandValue{ .U8 = emu.mem[operandValue.U16] };
+                operandValue = OperandValue{ .U8 = try emu.mem.read(operandValue.U16) };
             },
             .I8 => unreachable,
         }
@@ -86,7 +86,7 @@ pub fn getLeftOperandPtr(
     emu: *Emulator,
     instruction: InstructionsMod.Instruction,
     instruction_params: [2]u8,
-) GetOperandPtrErrors!OperandPtr {
+) !OperandPtr {
     errdefer instruction.print();
     const operandType = instruction.leftOperand;
     if (operandType == .NONE) {
@@ -111,14 +111,14 @@ pub fn getLeftOperandPtr(
             const value: u16 = (high << 8) | low;
 
             if (isPtrToMemory) {
-                return OperandPtr{ .U8 = &emu.mem[value] };
+                return OperandPtr{ .U8 = try emu.mem.readPtr(value) };
             }
             unreachable;
         },
         .U8 => {
             const value: u16 = @intCast(instruction_params[1]);
             if (isPtrToMemory and has_offset) {
-                return OperandPtr{ .U8 = &emu.mem[offset + value] };
+                return OperandPtr{ .U8 = try emu.mem.readPtr(offset + value) };
             }
             unreachable;
         },
@@ -131,11 +131,11 @@ pub fn getLeftOperandPtr(
     if (isPtrToMemory) {
         switch (op) {
             .U16 => {
-                op = OperandPtr{ .U8 = &emu.mem[op.U16.*] };
+                op = OperandPtr{ .U8 = try emu.mem.readPtr(op.U16.*) };
             },
             .U8 => {
                 if (has_offset) {
-                    op = OperandPtr{ .U8 = &emu.mem[op.U8.* + offset] };
+                    op = OperandPtr{ .U8 = try emu.mem.readPtr(op.U8.* + offset) };
                 } else {
                     return error.U8PtrNoOffset;
                 }
@@ -158,7 +158,6 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U8 => {
             const right: u8 = rightValue.U8;
             const left = leftPtr.U8;
-            const leftOld = left.*;
             var of: u1 = 0;
 
             if (adc and flags.carry) {
@@ -177,7 +176,6 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             if (!carry_set) {
                 flags.carry = of > 0;
             }
-            std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
         },
         .U16 => {
             // 0xE8
@@ -195,7 +193,6 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                 return;
             }
             const left = leftPtr.U16;
-            const leftOld = left.*;
             const right = rightValue.U16;
             var of: u1 = 0;
 
@@ -216,7 +213,6 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             if (!carry_set) {
                 flags.carry = of > 0;
             }
-            std.log.info("Added {X} + {X} = {X}", .{ leftOld, right, left.* });
         },
     }
 }
@@ -280,8 +276,8 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         const sp_upper: u8 = @intCast((emu.cpu.sp & 0xFF00) >> 8);
         const param_address: u16 = @as(u16, @intCast(instruction_params[1])) << 8 | instruction_params[0];
 
-        emu.mem[param_address] = sp_lower;
-        emu.mem[param_address + 1] = sp_upper;
+        try emu.mem.write(param_address, sp_lower);
+        try emu.mem.write(param_address + 1, sp_upper);
         return;
     }
 
@@ -294,15 +290,9 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
                 },
                 else => unreachable,
             }
-            // std.log.info("Loaded {X} into {s}", .{ rightValue.U8, @tagName(instruction.leftOperand) });
         },
         .U16 => {
             leftPtr.U16.* = rightValue.U16;
-            if (instruction.leftOperandPointer) {
-                // std.log.info("Loaded {X} into {s}", .{ rightValue.U16, leftPtr.U16.* });
-            } else {
-                // std.log.info("Loaded {X} into {s}", .{ rightValue.U16, @tagName(instruction.leftOperand) });
-            }
         },
     }
 
@@ -324,12 +314,6 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         },
         else => {},
     }
-    std.debug.print("loaded {t}({x:02}) into {t}({x:02})\n", .{
-        instruction.rightOperand,
-        if (rightValue == .U16) rightValue.U16 else if (rightValue == .U8) rightValue.U8 else unreachable,
-        instruction.leftOperand,
-        if (leftPtr == .U16) leftPtr.U16.* else leftPtr.U8.*,
-    });
 }
 
 // todo conditionally add ticks
@@ -468,7 +452,7 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
             const new_pc = pc + instruction.length;
             const upper: u8 = @intCast((new_pc & 0xFF00) >> 8);
             const lower: u8 = @intCast(new_pc & 0xFF);
-            emu.stackPush(upper, lower);
+            try emu.stackPush(upper, lower);
             emu.jump_to = operand.U16;
         },
         else => return error.InvalidOperantType,
@@ -494,7 +478,7 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
 
     var upper: u8 = undefined;
     var lower: u8 = undefined;
-    emu.stackPop(&upper, &lower);
+    try emu.stackPop(&upper, &lower);
 
     emu.jump_to = @as(u16, @intCast(upper)) << 8 | lower;
     // std.debug.print("Returned\n", .{});
@@ -654,7 +638,7 @@ pub fn push(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         .U16 => {
             const upper: u8 = @intCast((operand.U16 & 0xFF00) >> 8);
             const lower: u8 = @intCast(operand.U16 & 0xFF);
-            emu.stackPush(upper, lower);
+            try emu.stackPush(upper, lower);
         },
         else => return error.InvalidOperantType,
     }
@@ -666,7 +650,7 @@ pub fn pop(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         .U16 => {
             var upper: u8 = undefined;
             var lower: u8 = undefined;
-            emu.stackPop(&upper, &lower);
+            try emu.stackPop(&upper, &lower);
             const whole: u16 = @as(u16, @intCast(upper)) << 8 | lower;
             operand.U16.* = whole;
         },
@@ -682,7 +666,7 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         .U8 => {
             const upper: u8 = @intCast((pc.* & 0xFF00) >> 8);
             const lower: u8 = @intCast(pc.* & 0xFF);
-            emu.stackPush(upper, lower);
+            try emu.stackPush(upper, lower);
             // TODO not sure about this
             emu.jump_to = operand.U8;
         },
@@ -831,7 +815,7 @@ pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     var right_value_ptr: *u8 = undefined;
     // if its a ptr to memory then it must be (HL)
     if (instruction.rightOperandPointer) {
-        right_value_ptr = &emu.mem[emu.cpu.getU16Register(.HL).*];
+        right_value_ptr = try emu.mem.readPtr(emu.cpu.getU16Register(.HL).*);
     } else {
         right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
     }
@@ -858,7 +842,7 @@ pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     var right_value_ptr: *u8 = undefined;
     if (instruction.rightOperandPointer) {
-        right_value_ptr = &emu.mem[emu.cpu.getU16Register(.HL).*];
+        right_value_ptr = try emu.mem.readPtr(emu.cpu.getU16Register(.HL).*);
     } else {
         right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
     }

@@ -6,16 +6,16 @@ const instructions = InstructionsMod.instructions;
 const prefixed_instructions = InstructionsMod.prefixed_instructions;
 const implementations = @import("instruction_implementations.zig");
 const DoctorLogger = @import("doctor.zig").DoctorLogger;
+const Memory = @import("mmu.zig").Memory;
 
 pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
 pub const Emulator = struct {
     cpu: Cpu,
-    mem: [0xFFFF]u8 = undefined,
+    mem: Memory = Memory{},
     cb_prefixed: bool = false,
     doctor: ?DoctorLogger = null,
     is_stopped: bool = false,
-    // has_jumped: bool = false,
     jump_to: ?u16 = null,
     steps: usize = 0,
 
@@ -29,10 +29,7 @@ pub const Emulator = struct {
         var emu = Emulator{
             .cpu = Cpu.initBootRom(),
         };
-        emu.mem[0xFF44] = 0x90;
-        for (emu.mem[0xFF80 .. 0xFF80 + 127]) |*b| {
-            b.* = 0xFF;
-        }
+        emu.mem.write(0xFF44, 0x90) catch unreachable;
         return emu;
     }
     pub fn initDoctorStdOut(self: *Emulator) !void {
@@ -49,27 +46,29 @@ pub const Emulator = struct {
         self.doctor = try DoctorLogger.initWithFile(self, file_path);
     }
 
-    pub fn stackPush(self: *Emulator, upper: u8, lower: u8) void {
+    // todo implement stack overflow
+    pub fn stackPush(self: *Emulator, upper: u8, lower: u8) !void {
         const sp = &self.cpu.sp;
         sp.* -= 1;
-        self.mem[sp.*] = upper;
+        try self.mem.write(sp.*, upper);
         sp.* -= 1;
-        self.mem[sp.*] = lower;
+        try self.mem.write(sp.*, lower);
     }
 
-    pub fn stackPop(self: *Emulator, upper: *u8, lower: *u8) void {
+    pub fn stackPop(self: *Emulator, upper: *u8, lower: *u8) !void {
         const sp = &self.cpu.sp;
-        lower.* = self.mem[sp.*];
+        lower.* = try self.mem.read(sp.*);
         sp.* += 1;
-        upper.* = self.mem[sp.*];
+        upper.* = try self.mem.read(sp.*);
         sp.* += 1;
     }
 
     pub fn load_rom(self: *Emulator, rom: []const u8) !void {
-        if (rom.len > self.mem.len - 0x100) {
+        if (rom.len > self.mem.mem.len - 0x100) {
             return error.ROMTooBig;
         }
-        @memcpy(self.mem[0..rom.len], rom);
+        const mem = try self.mem.getSlice(0, @intCast(rom.len));
+        @memcpy(mem, rom);
     }
 
     pub fn run_emu(self: *Emulator) !void {
@@ -90,12 +89,12 @@ pub const Emulator = struct {
             return;
         }
         const pc = &self.cpu.pc;
-        if (pc.* >= self.mem.len) {
+        if (pc.* >= self.mem.mem.len) {
             std.debug.print("pc overflow", .{});
             return;
         }
 
-        const instruction_byte = self.mem[@intCast(pc.*)];
+        const instruction_byte = try self.mem.read(pc.*);
         var instruction: InstructionsMod.Instruction = undefined;
         var instruction_params = [2]u8{ 0, 0 };
         const instruction_set = if (self.cb_prefixed) prefixed_instructions else instructions;
@@ -111,14 +110,13 @@ pub const Emulator = struct {
 
         if (instruction.length > 1) {
             for (0..instruction.length - 1) |i| {
-                instruction_params[i] = self.mem[pc.* + i + 1];
+                instruction_params[i] = try self.mem.read(pc.* + i + 1);
             }
         }
 
         if (self.cb_prefixed) {
             self.cb_prefixed = false;
         }
-        // self.has_jumped = false;
         //todo handle 0xF8 edge case
         try invokeInstruction(self, instruction, instruction_params);
         self.cpu.getFlagsRegister().setFlags(instruction.flags);
@@ -137,9 +135,9 @@ pub const Emulator = struct {
             }
         }
         self.steps += 1;
-        // if (self.steps == 31459) {
-        //     self.is_stopped = true;
-        // }
+        if (self.steps == 31459) {
+            self.is_stopped = true;
+        }
     }
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
         return switch (i.type) {
