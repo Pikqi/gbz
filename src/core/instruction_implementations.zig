@@ -180,6 +180,10 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
         .U16 => {
             // 0xE8
             if (rightValue == .I8) {
+                const righValueU16: u16 = @intCast(@as(u8, @bitCast(rightValue.I8)));
+                flags.half_carry = ((leftPtr.U16.* & 0xF) + (righValueU16 & 0xF)) > 0xF;
+                flags.carry = ((leftPtr.U16.* & 0xFF) + (righValueU16)) > 0xFF;
+
                 if (rightValue.I8 >= 0) {
                     leftPtr.U16.* +%= @intCast(rightValue.I8);
                 } else {
@@ -188,6 +192,7 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                     l +%= r;
                     if (l < 0) {
                         l += std.math.maxInt(i17);
+                        l += 1;
                     }
                     leftPtr.U16.* = @intCast(l);
                 }
@@ -208,7 +213,7 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
                 left.* += if (flags.carry) 1 else 0;
             }
 
-            flags.half_carry = ((left.* & 0xF00) +% (right & 0xF00)) > 0xF00;
+            flags.half_carry = ((left.* & 0xFFF) +% (right & 0xFFF)) > 0xFFF;
             left.*, of = @addWithOverflow(left.*, right);
             flags.sub = false;
             if (!carry_set) {
@@ -283,10 +288,17 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
     // 0xF8
     if (instruction.leftOperand == .HL and instruction.rightOperand == .SP and instruction.rightOperandPointer == true) {
-        std.debug.print("0xF8 btw\n", .{});
-        //todo
+        const flags = emu.cpu.getFlagsRegister();
         const arg: u16 = @intCast(instruction_params[0]);
-        emu.cpu.sp += arg;
+        const signed: i8 = @bitCast(instruction_params[0]);
+
+        if (signed >= 0) {
+            emu.cpu.HL.getWholePtr().* = emu.cpu.sp +% arg;
+        } else {
+            emu.cpu.HL.getWholePtr().* = emu.cpu.sp -% @abs(signed);
+        }
+        flags.half_carry = (emu.cpu.sp & 0xF) + (arg & 0xF) > 0xF;
+        flags.carry = (emu.cpu.sp & 0xFF) + arg > 0xFF;
         return;
     }
 
