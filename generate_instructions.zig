@@ -219,9 +219,17 @@ pub fn main() !void {
                     },
                     3 => {
                         //0xF8
+                        if (!std.mem.eql(u8, instr.opcode, "0xF8")) {
+                            std.debug.print("Unexpected 3 operand operation that is not 0xF8 op: {s}\n", .{instr.opcode});
+                            return error.Unexpected3Operands;
+                        }
+
+                        i.leftOperand = .HL;
+                        i.rightOperandPointer = true;
+                        i.rightOperand = .SP;
                     },
                     else => {
-                        std.debug.print("\n\n more than 2 operands\n", .{});
+                        std.debug.print("\n\n more than 3 operands\n", .{});
 
                         std.debug.print("{s} {s}", .{ instr.mnemonic, instr.opcode });
                     },
@@ -340,6 +348,10 @@ pub fn dumpDefinition(inst: Instruction, key: usize) void {
 }
 fn genereateMnemonic(i: Instruction, key: usize) void {
     std.debug.print(".name = \"{t} ", .{i.type});
+    if (key == 0xF8 and !cb) {
+        std.debug.print("HL,(SP)+i8 - 0x{X}\",", .{key});
+        return;
+    }
 
     if (i.condition != .NONE) {
         std.debug.print("{t}, ", .{i.condition});

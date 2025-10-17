@@ -281,6 +281,14 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
         try emu.mem.write(param_address + 1, sp_upper);
         return;
     }
+    // 0xF8
+    if (instruction.leftOperand == .HL and instruction.rightOperand == .SP and instruction.rightOperandPointer == true) {
+        std.debug.print("0xF8 btw\n", .{});
+        //todo
+        const arg: u16 = @intCast(instruction_params[0]);
+        emu.cpu.sp += arg;
+        return;
+    }
 
     switch (leftPtr) {
         .U8 => {

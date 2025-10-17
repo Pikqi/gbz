@@ -2388,8 +2388,11 @@ pub const instructions: InstructionArray = blk: {
     };
 
     t_instructions[0xF8] = Instruction{
-        .name = "LD  - 0xF8",
+        .name = "LD HL,(SP)+i8 - 0xF8",
         .type = .LD,
+        .leftOperand = .HL,
+        .rightOperand = .SP,
+        .rightOperandPointer = true,
         .length = 2,
         .tcycle = 3,
         .flags = .{ .carry = .DEPENDENT, .half_carry = .DEPENDENT, .sub = .UNSET, .zero = .UNSET },
