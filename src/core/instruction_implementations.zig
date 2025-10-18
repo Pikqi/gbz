@@ -724,22 +724,23 @@ pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     switch (instruction.type) {
         .RL => {
             operand.*, _ = @shlWithOverflow(operand.*, 1);
-            operand.* |= b7;
+            flags.carry = b7 == 1;
+            operand.* |= prev_carry;
         },
         .RLC => {
             operand.*, _ = @shlWithOverflow(operand.*, 1);
+            flags.carry = b7 == 1;
             operand.* |= b7;
-            flags.carry = b7 > 0;
         },
         .RR => {
             operand.* >>= 1;
-            operand.* |= (@as(u8, @intCast(prev_carry)) << 7);
             flags.carry = b0 > 0;
+            operand.* |= (@as(u8, @intCast(prev_carry)) << 7);
         },
         .RRC => {
             operand.* >>= 1;
-            flags.carry = b0 > 0;
-            flags.carry = b0 > 0;
+            flags.carry = b0 == 1;
+            operand.* |= (@as(u8, @intCast(b0)) << 7);
         },
         else => {
             return error.OperandProhibited;
@@ -770,13 +771,13 @@ pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         return error.OperatorIsNotAPointer;
     }
     const operand = leftPtr.U8;
-    const highest_bit = operand.* | (1 << 7);
-    const lowest_bit = operand.* | 1;
+    const b7: u8 = operand.* & (1 << 7);
+    const b0: u1 = @intCast(operand.* & 1);
 
     operand.* >>= 1;
-    operand.* &= highest_bit;
+    operand.* |= b7;
 
-    flags.carry = lowest_bit > 0;
+    flags.carry = b0 == 1;
     flags.zero = operand.* == 0;
 }
 
