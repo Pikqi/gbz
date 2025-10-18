@@ -118,8 +118,6 @@ pub const Emulator = struct {
             // std.debug.print("{s}\n", .{instr.name});
             instruction = instr;
         } else {
-            std.log.warn("{X:02} not defined\n", .{instruction_byte});
-            pc.* += 1;
             return error.UnkownInstruction;
         }
 
@@ -192,6 +190,7 @@ pub const Emulator = struct {
             .SWAP => try implementations.swap(self, i),
             .RES => try implementations.res(self, i, instruction_params),
             .SET => try implementations.set(self, i, instruction_params),
+            .RETI => try implementations.reti(self),
             else => {
                 return error.NotImplemented;
             },

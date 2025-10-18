@@ -499,6 +499,14 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     // std.debug.print("Returned\n", .{});
 }
 
+pub fn reti(emu: *Emulator) !void {
+    var upper: u8 = undefined;
+    var lower: u8 = undefined;
+    try emu.stackPop(&upper, &lower);
+
+    emu.jump_to = @as(u16, @intCast(upper)) << 8 | lower;
+}
+
 pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
@@ -675,6 +683,7 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const operand = try getOperandValue(emu, true, instruction, .{ 0, 0 });
 
     const pc = &emu.cpu.pc;
+    pc.* += instruction.length;
 
     switch (operand) {
         .U8 => {
