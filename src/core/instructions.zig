@@ -31,6 +31,9 @@ pub const Instruction = struct {
         std.debug.print("{s} ", .{self.name});
         std.debug.print("\n\n", .{});
     }
+    pub fn printWithParams(self: *const Instruction, params: [2]u8) void {
+        std.debug.print("{s} params: {X}\n", .{ self.name, params });
+    }
 };
 
 pub const InstructionIncrement = enum {

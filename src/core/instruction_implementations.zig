@@ -505,6 +505,7 @@ pub fn reti(emu: *Emulator) !void {
     try emu.stackPop(&upper, &lower);
 
     emu.jump_to = @as(u16, @intCast(upper)) << 8 | lower;
+    emu.interupts_enabled = true;
 }
 
 pub fn andd(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
@@ -696,17 +697,16 @@ pub fn rst(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         else => return error.InvalidOperantType,
     }
 }
+
+// Todo check this on pandocs
+// The effect of ei is delayed by one instruction. This means that ei followed immediately by di
+// does not allow any interrupts between them. This interacts with the halt bug in an interesting way.
+
 pub fn ei(emu: *Emulator) void {
-    _ = emu; // autofix
-    std.debug.print("stop because ei\n", .{});
-    // stop(emu);
-    //todo interupts
+    emu.interupts_enabled = true;
 }
 pub fn di(emu: *Emulator) void {
-    _ = emu; // autofix
-    std.debug.print("stop because di\n", .{});
-    // stop(emu);
-    //todo interupts
+    emu.interupts_enabled = false;
 }
 
 pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
