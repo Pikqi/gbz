@@ -161,21 +161,19 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
             var of: u1 = 0;
 
             if (adc and flags.carry) {
-                left.*, of = @addWithOverflow(left.*, 1);
-                if (of > 0) {
-                    flags.carry = true;
-                    carry_set = true;
-                }
+                flags.half_carry = ((left.* & 0xF) + (right & 0xF) + 1) > 0xF;
+
+                left.*, of = @addWithOverflow(left.*, right);
+                left.*, const adc_of = @addWithOverflow(left.*, 1);
+                of |= adc_of;
+            } else {
+                flags.half_carry = ((left.* & 0xF) + (right & 0xF)) > 0xF;
+
+                left.*, of = @addWithOverflow(left.*, right);
             }
 
-            flags.half_carry = ((left.* & 0xF) + (right & 0xF)) > 0xF;
-
-            left.*, of = @addWithOverflow(left.*, right);
+            flags.carry = of == 1;
             flags.zero = left.* == 0;
-            flags.sub = false;
-            if (!carry_set) {
-                flags.carry = of > 0;
-            }
         },
         .U16 => {
             // 0xE8
@@ -244,26 +242,22 @@ pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     switch (leftPtr) {
         .U8 => {
-            var carry_set = false;
+            const left = leftPtr.U8;
+            const right = rightValue.U8;
             var of: u1 = 0;
+
             if (sbc and flags.carry) {
-                leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, 1);
-                if (of > 0) {
-                    flags.carry = true;
-                    carry_set = true;
-                }
+                flags.half_carry = ((left.* & 0xF) -% (right & 0xF) -% 1) > (left.* & 0xF);
+
+                left.*, const sbc_of = @subWithOverflow(left.*, 1);
+                left.*, of = @subWithOverflow(left.*, right);
+                of |= sbc_of;
+            } else {
+                flags.half_carry = ((left.* & 0xF) -% (rightValue.U8 & 0xF)) > (left.* & 0xF);
+                left.*, of = @subWithOverflow(left.*, right);
             }
-
-            const half_carry = ((leftPtr.U8.* & 0xF) -% (rightValue.U8 & 0xF)) > leftPtr.U8.*;
-
-            leftPtr.U8.*, of = @subWithOverflow(leftPtr.U8.*, rightValue.U8);
-
-            flags.half_carry = half_carry;
-            flags.zero = leftPtr.U8.* == 0;
-            if (!carry_set) {
-                flags.carry = of > 0;
-            }
-            flags.sub = true;
+            flags.carry = of == 1;
+            flags.zero = left.* == 0;
         },
 
         .U16 => {
