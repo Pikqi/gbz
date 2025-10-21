@@ -16,6 +16,14 @@ const MemoryRegisters = enum(u16) {
     TIMER_TIMA = 0xFF05,
     TIMER_TMA = 0xFF06,
     TIMER_TAC = 0xFF07,
+    PPU_LCDC = 0xFF40,
+    PPU_STAT = 0xFF41,
+    PPU_LY = 0xFF44,
+    PPU_LYC = 0xFF45,
+    OAM_DMA = 0xFF46,
+    PPU_BGP = 0xFF47,
+    PPU_WY = 0xFF4A,
+    PPU_WX = 0xFF4B,
 };
 
 const InteruptFlag = packed struct(u8) {

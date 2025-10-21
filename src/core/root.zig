@@ -11,4 +11,5 @@ test "import" {
     _ = @import("instructions.zig");
     _ = @import("doctor.zig");
     _ = @import("mmu.zig");
+    _ = @import("ppu.zig");
 }

@@ -8,6 +8,7 @@ const implementations = @import("instruction_implementations.zig");
 const DoctorLogger = @import("doctor.zig").DoctorLogger;
 const Memory = @import("mmu.zig").Memory;
 const Timer = @import("timer.zig").Timer;
+const Ppu = @import("ppu.zig").Ppu;
 
 pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
@@ -20,6 +21,7 @@ const LastInstruction = struct {
 pub const Emulator = struct {
     cpu: Cpu,
     mem: Memory = Memory{},
+    ppu: Ppu = Ppu{},
     cb_prefixed: bool = false,
     doctor: ?DoctorLogger = null,
     is_stopped: bool = false,
@@ -113,6 +115,7 @@ pub const Emulator = struct {
             try self.timer.tick();
             try self.handle_interupts();
             self.cpu_cycles_total += self.cpu_cycles;
+            self.ppu.tick(self.cpu_cycles);
         }
     }
 
