@@ -16,6 +16,7 @@ const LastInstruction = struct {
     prefixed: bool = false,
     params: [2]u8,
 };
+
 pub const Emulator = struct {
     cpu: Cpu,
     mem: Memory = Memory{},
@@ -25,9 +26,11 @@ pub const Emulator = struct {
     jump_to: ?u16 = null,
     steps: usize = 0,
     last_instructinon: ?LastInstruction = null,
-    interupts_enabled: bool = true,
+    interupts_enabled: bool = false,
     timer: Timer = Timer{},
     cpu_cycles: u64 = 0,
+    cpu_cycles_total: u64 = 0,
+    interupt_handled: bool = false,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -109,6 +112,7 @@ pub const Emulator = struct {
             try self.cpu_step();
             try self.timer.tick();
             try self.handle_interupts();
+            self.cpu_cycles_total += self.cpu_cycles;
         }
     }
 
@@ -122,6 +126,10 @@ pub const Emulator = struct {
         if (pc.* >= self.mem.mem.len) {
             std.debug.print("pc overflow", .{});
             return;
+        }
+        if (self.interupt_handled) {
+            self.interupt_handled = false;
+            self.cpu_cycles += 5;
         }
 
         const instruction_byte = try self.mem.read(pc.*);
@@ -148,6 +156,8 @@ pub const Emulator = struct {
         }
 
         //todo handle 0xF8 edge case
+        // std.debug.print("s: {d} ", .{self.steps});
+        // instruction.printWithParams(instruction_params);
         try invokeInstruction(self, instruction, instruction_params);
         self.cpu.getFlagsRegister().setFlags(instruction.flags);
 
@@ -164,7 +174,6 @@ pub const Emulator = struct {
                 };
             }
         }
-        //todo implement in conditionals reducing the number of cycles
         self.cpu_cycles += instruction.tcycle;
 
         self.steps += 1;
@@ -177,34 +186,34 @@ pub const Emulator = struct {
         if (!self.interupts_enabled) {
             return;
         }
-        if (self.mem.IF.vblank and self.mem.IE.vblank) {
-            //call vblank
-            std.debug.print("vblank itnerupt\n", .{});
-            try self.stackPushPC();
-            return;
-        }
-        if (self.mem.IF.lcd and self.mem.IE.lcd) {
-            //call lcd
-            std.debug.print("lcd itnerupt\n", .{});
-            try self.stackPushPC();
-            return;
-        }
-        if (self.mem.IF.timer and self.mem.IE.timer) {
-            std.debug.print("timer itnerupt\n", .{});
-            try self.stackPushPC();
+        const IF = self.mem.getIF();
+        const IE = self.mem.getIE();
 
-            self.mem.IF.timer = false;
-            self.cpu.pc = 0x0050;
-            self.interupts_enabled = false;
+        if (IF.vblank and IE.vblank) {
+            @panic("vblank interupt not implemented!\n");
+        }
+        if (IF.lcd and IE.lcd) {
+            @panic("lcd interupt not implemented!\n");
+        }
+        if (IF.timer and IE.timer) {
+            std.debug.print("timer itnerupt\n", .{});
+            IF.timer = false;
+            try self.gotoInterupt(0x0050);
 
             return;
         }
-        if (self.mem.IF.serial and self.mem.IE.serial) {
-            //call serial
-            try self.stackPushPC();
-            std.debug.print("timer itnerupt\n", .{});
-            return;
+        if (IF.serial and IE.serial) {
+            @panic("serial interupt not implemented!\n");
         }
+    }
+
+    fn gotoInterupt(self: *Emulator, vector: u16) !void {
+        try self.stackPushPC();
+
+        self.cpu.pc = vector;
+        self.interupts_enabled = false;
+        self.cpu_cycles_total += 5;
+        self.interupt_handled = true;
     }
 
     fn invokeInstruction(self: *Emulator, i: InstructionsMod.Instruction, instruction_params: [2]u8) !void {

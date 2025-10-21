@@ -10,6 +10,8 @@ const HRAM_SIZE = 0xFFFE - 0xFF80;
 const MEM_SIZE = 0x10000;
 
 const MemoryRegisters = enum(u16) {
+    IF = 0xFF0F,
+    IE = 0xFFFF,
     TIMER_DIV = 0xFF04,
     TIMER_TIMA = 0xFF05,
     TIMER_TMA = 0xFF06,
@@ -23,6 +25,9 @@ const InteruptFlag = packed struct(u8) {
     serial: bool,
     joypad: bool,
     rest: u3 = 0,
+    pub fn byteCast(self: *InteruptFlag) *u8 {
+        return @ptrCast(self);
+    }
 };
 
 pub const Memory = struct {
@@ -30,9 +35,13 @@ pub const Memory = struct {
     rom_bank_selected: u8 = 0,
     logs_enabled: bool = false,
     // FFFF
-    IE: InteruptFlag = std.mem.zeroes(InteruptFlag),
+    pub fn getIE(self: *Memory) *InteruptFlag {
+        return @ptrCast(&self.mem[0xFFFF]);
+    }
     // FF0F
-    IF: InteruptFlag = std.mem.zeroes(InteruptFlag),
+    pub fn getIF(self: *Memory) *InteruptFlag {
+        return @ptrCast(&self.mem[0xFF0F]);
+    }
 
     pub fn read(self: *const Memory, addrs: usize) !u8 {
         if (addrs >= self.mem.len) {
@@ -82,3 +91,17 @@ pub const Memory = struct {
         self.mem = std.mem.zeroes([0x10000]u8);
     }
 };
+test "InteruptFlag" {
+    var IF: InteruptFlag = @bitCast(@as(u8, 0));
+    try std.testing.expectEqual(IF.timer, false);
+    try std.testing.expectEqual(IF.joypad, false);
+    try std.testing.expectEqual(IF.serial, false);
+    try std.testing.expectEqual(IF.vblank, false);
+    try std.testing.expectEqual(IF.lcd, false);
+    IF = @bitCast(@as(u8, 0x04));
+    try std.testing.expectEqual(IF.timer, true);
+    try std.testing.expectEqual(IF.joypad, false);
+    try std.testing.expectEqual(IF.serial, false);
+    try std.testing.expectEqual(IF.vblank, false);
+    try std.testing.expectEqual(IF.lcd, false);
+}

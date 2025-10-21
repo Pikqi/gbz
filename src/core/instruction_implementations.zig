@@ -331,7 +331,6 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 }
 
-// todo conditionally add ticks
 pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const condition = instruction.condition;
@@ -350,14 +349,14 @@ pub fn jp(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     if (should_jump) {
         // emu.cpu.pc = operand.U16;
         emu.jump_to = operand.U16;
-        // TODO: Increase tcycle
         // std.debug.print("Jumped to {X}", .{emu.cpu.pc});
-    } else {
-        // std.debug.print("Did not jump ", .{});
+
+        if (instruction.alt_tcycle) |alt_cycle| {
+            emu.cpu_cycles += alt_cycle;
+        }
     }
 }
 
-// todo conditionally add ticks
 pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const condition = instruction.condition;
@@ -377,10 +376,10 @@ pub fn jr(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
             if (should_jump) {
                 const pc: i64 = @intCast(emu.cpu.pc);
                 emu.jump_to = @intCast(pc + instruction.length + @as(i64, @intCast(operand.I8)));
-                // TODO: Increase tcycle
-                // std.debug.print("Jumped to {X}\n", .{emu.cpu.pc});
-            } else {
-                // std.debug.print("Did not jump \n", .{});
+
+                if (instruction.alt_tcycle) |alt_cycle| {
+                    emu.cpu_cycles += alt_cycle;
+                }
             }
         },
         else => {
@@ -441,7 +440,6 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     }
 }
 
-// todo conditionally add ticks
 pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const operand = try getOperandValue(emu, true, instruction, instruction_params);
     const flags = emu.cpu.getFlagsRegister();
@@ -460,7 +458,9 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     if (!should_jump) {
         return;
     }
-
+    if (instruction.alt_tcycle) |alt_cycle| {
+        emu.cpu_cycles += alt_cycle;
+    }
     switch (operand) {
         .U16 => {
             // TODO make emu.pushPCToStack()
@@ -474,7 +474,6 @@ pub fn call(emu: *Emulator, instruction: InstructionsMod.Instruction, instructio
     }
 }
 
-// todo conditionally add ticks
 pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
@@ -491,6 +490,9 @@ pub fn ret(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
         return;
     }
 
+    if (instruction.alt_tcycle) |alt_cycle| {
+        emu.cpu_cycles += alt_cycle;
+    }
     var upper: u8 = undefined;
     var lower: u8 = undefined;
     try emu.stackPop(&upper, &lower);

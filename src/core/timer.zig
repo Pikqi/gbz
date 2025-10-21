@@ -22,17 +22,18 @@ pub const Timer = struct {
             emu.mem.writeMemoryRegister(.TIMER_DIV, new_div);
         }
         const tac_speed = getTacSpeed(self);
-        std.debug.print("tac {d}\n", .{emu.mem.getMemoryRegister(.TIMER_TAC)});
         if (tac_speed == 0) {
             return;
         }
+
+        const IF = emu.mem.getIF();
 
         var tima = emu.mem.getMemoryRegister(.TIMER_TIMA);
         cycles = emu.cpu_cycles + self.tima_remainder_cycles;
         const ticks: u8 = @truncate(cycles / tac_speed);
         tima, const of = @addWithOverflow(tima, ticks);
-        if (of == 1) {
-            emu.mem.IF.timer = true;
+        if (of > 0) {
+            IF.timer = true;
             const tma = emu.mem.getMemoryRegister(.TIMER_TMA);
             emu.mem.writeMemoryRegister(.TIMER_TIMA, tma);
         } else {
