@@ -433,8 +433,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .I8,
         .condition = .NZ,
         .length = 2,
-        .tcycle = 3,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0x21] = Instruction{
@@ -506,8 +506,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .I8,
         .condition = .Z,
         .length = 2,
-        .tcycle = 3,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0x29] = Instruction{
@@ -580,8 +580,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .I8,
         .condition = .NC,
         .length = 2,
-        .tcycle = 3,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0x31] = Instruction{
@@ -656,8 +656,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .I8,
         .condition = .C,
         .length = 2,
-        .tcycle = 3,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0x39] = Instruction{
@@ -1965,8 +1965,8 @@ pub const instructions: InstructionArray = blk: {
         .type = .RET,
         .condition = .NZ,
         .length = 1,
-        .tcycle = 5,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 3,
     };
 
     t_instructions[0xC1] = Instruction{
@@ -1983,8 +1983,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .NZ,
         .length = 3,
-        .tcycle = 4,
-        .alt_tcycle = 3,
+        .tcycle = 3,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0xC3] = Instruction{
@@ -2001,7 +2001,7 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .NZ,
         .length = 3,
-        .tcycle = 6,
+        .tcycle = 3,
         .alt_tcycle = 3,
     };
 
@@ -2037,8 +2037,8 @@ pub const instructions: InstructionArray = blk: {
         .type = .RET,
         .condition = .Z,
         .length = 1,
-        .tcycle = 5,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 3,
     };
 
     t_instructions[0xC9] = Instruction{
@@ -2054,8 +2054,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .Z,
         .length = 3,
-        .tcycle = 4,
-        .alt_tcycle = 3,
+        .tcycle = 3,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0xCB] = Instruction{
@@ -2071,7 +2071,7 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .Z,
         .length = 3,
-        .tcycle = 6,
+        .tcycle = 3,
         .alt_tcycle = 3,
     };
 
@@ -2107,8 +2107,8 @@ pub const instructions: InstructionArray = blk: {
         .type = .RET,
         .condition = .NC,
         .length = 1,
-        .tcycle = 5,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 3,
     };
 
     t_instructions[0xD1] = Instruction{
@@ -2125,8 +2125,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .NC,
         .length = 3,
-        .tcycle = 4,
-        .alt_tcycle = 3,
+        .tcycle = 3,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0xD4] = Instruction{
@@ -2135,7 +2135,7 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .NC,
         .length = 3,
-        .tcycle = 6,
+        .tcycle = 3,
         .alt_tcycle = 3,
     };
 
@@ -2171,8 +2171,8 @@ pub const instructions: InstructionArray = blk: {
         .type = .RET,
         .condition = .C,
         .length = 1,
-        .tcycle = 5,
-        .alt_tcycle = 2,
+        .tcycle = 2,
+        .alt_tcycle = 3,
     };
 
     t_instructions[0xD9] = Instruction{
@@ -2188,8 +2188,8 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .C,
         .length = 3,
-        .tcycle = 4,
-        .alt_tcycle = 3,
+        .tcycle = 3,
+        .alt_tcycle = 1,
     };
 
     t_instructions[0xDC] = Instruction{
@@ -2198,7 +2198,7 @@ pub const instructions: InstructionArray = blk: {
         .leftOperand = .U16,
         .condition = .C,
         .length = 3,
-        .tcycle = 6,
+        .tcycle = 3,
         .alt_tcycle = 3,
     };
 

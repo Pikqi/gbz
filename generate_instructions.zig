@@ -63,7 +63,9 @@ pub fn main() !void {
             i.length -= 1;
         }
         if (instr.cycles.len == 2) {
-            i.alt_tcycle = @intFromFloat(instr.cycles[1] / 4);
+            i.tcycle = @intFromFloat(instr.cycles[1] / 4);
+            i.alt_tcycle = @intFromFloat(instr.cycles[0] / 4);
+            i.alt_tcycle.? -= i.tcycle;
         }
 
         const inst_type = std.meta.stringToEnum(InstructionMod.InstructionType, instr.mnemonic);
