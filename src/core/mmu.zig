@@ -41,7 +41,7 @@ const InteruptFlag = packed struct(u8) {
 pub const Memory = struct {
     mem: [MEM_SIZE]u8 = undefined,
     rom_bank_selected: u8 = 0,
-    logs_enabled: bool = false,
+    logs_enabled: bool = true,
     // FFFF
     pub fn getIE(self: *Memory) *InteruptFlag {
         return @ptrCast(&self.mem[0xFFFF]);
@@ -69,10 +69,14 @@ pub const Memory = struct {
             return error.MemWriteOutOfBounds;
         }
 
-        self.mem[addrs] = value;
         if (self.logs_enabled) {
-            std.debug.print("{X:02} written to {X:04}\n", .{ value, addrs });
+            if (std.enums.fromInt(MemoryRegisters, addrs)) |mem_reg| {
+                std.debug.print("{X:02} written to {X:04} ({t})\n", .{ value, addrs, mem_reg });
+            } else {
+                std.debug.print("{X:02} written to {X:04}\n", .{ value, addrs });
+            }
         }
+        self.mem[addrs] = value;
     }
     pub fn getSlice(self: *Memory, start: usize, end: usize) ![]u8 {
         if (start > end) {
@@ -90,7 +94,7 @@ pub const Memory = struct {
     pub fn writeMemoryRegister(self: *Memory, reg: MemoryRegisters, value: u8) void {
         self.mem[@intFromEnum(reg)] = value;
 
-        if (self.logs_enabled) {
+        if (self.logs_enabled and reg != .TIMER_DIV) {
             std.debug.print("{X:02} written to {t}\n", .{ value, reg });
         }
     }

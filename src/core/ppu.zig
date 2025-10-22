@@ -2,13 +2,13 @@ const std = @import("std");
 const Emulator = @import("emulator.zig").Emulator;
 
 pub const LCDStat = packed struct(u8) {
-    _unused: u1 = 1,
-    lyc_int: bool,
-    mode2_int: bool,
-    mode1_int: bool,
-    mode3_int: bool,
-    coincidence: bool,
     ppu_mode: PpuMode,
+    coincidence: bool,
+    mode0_int: bool,
+    mode1_int: bool,
+    mode2_int: bool,
+    lyc_int: bool,
+    _unused: u1 = 1,
 };
 
 pub const PalleteColors = enum(u2) {
@@ -66,24 +66,104 @@ pub const Ppu = struct {
 
     pub fn tick(self: *Ppu, ticks: usize) void {
         self.ticks += ticks;
-        const stat = self.getStat();
+        const emu = self.getEmu();
+        var stat = self.getStat();
+        const ly = emu.mem.getMemoryRegister(.PPU_LY);
+        const lyc = emu.mem.getMemoryRegister(.PPU_LYC);
+
+        const stat_int: u8 = @bitCast(stat);
+        _ = stat_int; // autofix
 
         switch (stat.ppu_mode) {
-            .HBLANK => {},
-            .VBLANK => {},
-            .OAMSCAN => {},
-            .DRAWING => {},
+            // MODE 2
+            .OAMSCAN => {
+                if (self.ticks >= 80) {
+                    self.ticks -= 80;
+                } else {
+                    return;
+                }
+                if (stat.mode2_int) {
+                    const IF = emu.mem.getIF();
+                    IF.lcd = true;
+                }
+                stat.ppu_mode = .DRAWING;
+                emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
+            },
+            // MODE 3
+            .DRAWING => {
+                if (self.ticks >= 289) {
+                    self.ticks -= 289;
+                } else {
+                    return;
+                }
+
+                if (lyc == ly) {
+                    stat.coincidence = true;
+                    if (stat.lyc_int) {
+                        const IF = emu.mem.getIF();
+                        IF.lcd = true;
+                    }
+                }
+
+                stat.ppu_mode = .HBLANK;
+
+                emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
+            },
+            // MODE 0
+            .HBLANK => {
+                if (self.ticks >= 87) {
+                    self.ticks -= 87;
+                } else {
+                    return;
+                }
+
+                if (ly >= 143) {
+                    stat.ppu_mode = .VBLANK;
+                } else {
+                    stat.ppu_mode = .OAMSCAN;
+                }
+                emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);
+                emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
+                if (stat.mode0_int) {
+                    const IF = emu.mem.getIF();
+                    IF.lcd = true;
+                }
+            },
+            // MODE 1
+            .VBLANK => {
+                if (self.ticks >= 456) {
+                    self.ticks -= 456;
+                } else {
+                    return;
+                }
+                std.debug.print("vblank ly: {d}\n", .{ly});
+                if (ly == 144) {
+                    emu.mem.getIF().*.vblank = true;
+                }
+
+                if (ly == 152) {
+                    emu.mem.writeMemoryRegister(.PPU_LY, 0);
+                    stat.ppu_mode = .OAMSCAN;
+                } else {
+                    emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);
+                }
+
+                if (stat.mode1_int) {
+                    emu.mem.getIF().*.lcd = true;
+                }
+
+                emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
+            },
         }
         // std.debug.print("{any} \n\n", .{self.getStat()});
-        _ = self.debugPrintVRAMwithANSI() catch unreachable;
+        // _ = self.debugPrintVRAMwithANSI() catch unreachable;
     }
-    pub fn getVRAMPixels(self: *Ppu) [384]TilePixels {
-        var pixel_tiles = std.mem.zeroes([384]TilePixels);
+    pub fn getVRAMPixels(self: *Ppu) [128 * 4]TilePixels {
+        var pixel_tiles = std.mem.zeroes([128 * 4]TilePixels);
         var pi: usize = 0;
         const vram = self.getVRAM();
         for (0..vram.len / 16) |i| {
             const tile = Tile.fromSlice(vram[i * 16 .. (i + 1) * 16]) catch unreachable;
-            std.debug.print("tile: {X}", .{tile.data});
             pixel_tiles[pi] = tile.toPixels();
             pi += 1;
         }
@@ -92,7 +172,7 @@ pub const Ppu = struct {
 
     fn getVRAM(self: *Ppu) []u8 {
         const emu = self.getEmu();
-        return emu.mem.getSlice(0x8800, 0x97FF) catch unreachable;
+        return emu.mem.getSlice(0x8000, 0x97FF) catch unreachable;
     }
     fn getStat(self: *Ppu) LCDStat {
         return @bitCast(self.getEmu().mem.getMemoryRegister(.PPU_STAT));
@@ -145,3 +225,12 @@ const colorPalleteAnsiChars = blk: {
     map.put(.WHITE, "\x1b[37m");
     break :blk map;
 };
+
+test "LCDStat" {
+    const stat: LCDStat = @bitCast(@as(u8, 0b00010111));
+    try std.testing.expect(stat.coincidence);
+    try std.testing.expect(!stat.mode0_int);
+    try std.testing.expect(stat.mode1_int);
+    try std.testing.expect(!stat.mode2_int);
+    try std.testing.expect(!stat.lyc_int);
+}

@@ -38,7 +38,7 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 
 fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     // const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
-    const file_name = "roms/cpu_instrs/individual/02-interrupts.gb";
+    const file_name = "roms/dmg-acid2.gb";
     const file = try std.fs.cwd().openFile(file_name, .{});
     const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);

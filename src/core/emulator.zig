@@ -1,16 +1,17 @@
 const std = @import("std");
 
+pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
+
 const Cpu = @import("cpu.zig").Cpu;
+const DoctorLogger = @import("doctor.zig").DoctorLogger;
+const implementations = @import("instruction_implementations.zig");
 const InstructionsMod = @import("instructions.zig");
 const instructions = InstructionsMod.instructions;
 const prefixed_instructions = InstructionsMod.prefixed_instructions;
-const implementations = @import("instruction_implementations.zig");
-const DoctorLogger = @import("doctor.zig").DoctorLogger;
 const Memory = @import("mmu.zig").Memory;
+const ppu = @import("ppu.zig");
+const Ppu = ppu.Ppu;
 const Timer = @import("timer.zig").Timer;
-const Ppu = @import("ppu.zig").Ppu;
-
-pub const DoubleU8Ptr = @import("common").DoubleU8Ptr;
 
 const LastInstruction = struct {
     id: u8,
@@ -45,7 +46,11 @@ pub const Emulator = struct {
             .cpu = Cpu.initBootRom(),
         };
         emu.mem.zero();
-        emu.mem.write(0xFF44, 0x90) catch unreachable;
+        emu.mem.write(0xFF44, 0x00) catch unreachable;
+
+        // for (0x8000..0x9800) |i| {
+        //     emu.mem.write(i, @intCast(0x44 + i % 0x44)) catch unreachable;
+        // }
         return emu;
     }
     pub fn initDoctorStdOut(self: *Emulator) !void {
@@ -122,7 +127,7 @@ pub const Emulator = struct {
     pub fn cpu_step(self: *Emulator) !void {
         // var sp = &self.cpu.sp;
         if (self.cpu.is_halted) {
-            std.log.info("Halted\n", .{});
+            self.cpu_cycles += 1;
             return;
         }
         const pc = &self.cpu.pc;
@@ -196,7 +201,11 @@ pub const Emulator = struct {
             @panic("vblank interupt not implemented!\n");
         }
         if (IF.lcd and IE.lcd) {
-            @panic("lcd interupt not implemented!\n");
+            std.debug.print("lcd itnerupt\n", .{});
+            IF.lcd = false;
+            try self.gotoInterupt(0x0048);
+
+            return;
         }
         if (IF.timer and IE.timer) {
             std.debug.print("timer itnerupt\n", .{});
@@ -208,9 +217,15 @@ pub const Emulator = struct {
         if (IF.serial and IE.serial) {
             @panic("serial interupt not implemented!\n");
         }
+
+        if (IF.joypad and IE.joypad) {
+            @panic("joypad interupt not implemented!\n");
+        }
     }
 
     fn gotoInterupt(self: *Emulator, vector: u16) !void {
+        self.cpu.is_halted = false;
+        std.debug.print("unhalted\n", .{});
         try self.stackPushPC();
 
         self.cpu.pc = vector;
