@@ -279,7 +279,9 @@ pub const Emulator = struct {
         };
     }
 };
-test "List non implemented instructions" {
+
+// This test should catch any invalid combination of instruction operands
+test "Try all instructions" {
     for (0..512) |i| {
         const instr = if (i <= 255) instructions[i] else prefixed_instructions[i - 256];
         // ilegal instr
@@ -287,10 +289,6 @@ test "List non implemented instructions" {
         var emu = Emulator.initBootRom();
         emu.mem.logs_enabled = false;
         emu.cpu.sp = 1000;
-        emu.invokeInstruction(instr.?, .{ 0, 0 }) catch |err| {
-            if (err == error.NotImplemented) {
-                std.debug.print("Instruction {t} not implemented\n", .{instr.?.type});
-            }
-        };
+        try emu.invokeInstruction(instr.?, .{ 0, 0 });
     }
 }
