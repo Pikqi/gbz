@@ -8,7 +8,9 @@ const implementations = @import("instruction_implementations.zig");
 const InstructionsMod = @import("instructions.zig");
 const instructions = InstructionsMod.instructions;
 const prefixed_instructions = InstructionsMod.prefixed_instructions;
-const Memory = @import("mmu.zig").Memory;
+const mmu = @import("mmu.zig");
+const Memory = mmu.Memory;
+const InteruptFlag = mmu.InteruptFlag;
 const ppu = @import("ppu.zig");
 const Ppu = ppu.Ppu;
 const Timer = @import("timer.zig").Timer;
@@ -195,21 +197,21 @@ pub const Emulator = struct {
             return;
         }
         const IF = self.mem.getIF();
-        const IE = self.mem.getIE();
+        const IE: InteruptFlag = @bitCast(self.mem.getMemoryRegister(.IE));
 
         if (IF.vblank and IE.vblank) {
             @panic("vblank interupt not implemented!\n");
         }
         if (IF.lcd and IE.lcd) {
             std.debug.print("lcd itnerupt\n", .{});
-            IF.lcd = false;
+            self.mem.setIFInterupt(.LCD, false);
             try self.gotoInterupt(0x0048);
 
             return;
         }
         if (IF.timer and IE.timer) {
             std.debug.print("timer itnerupt\n", .{});
-            IF.timer = false;
+            self.mem.setIFInterupt(.TIMER, false);
             try self.gotoInterupt(0x0050);
 
             return;

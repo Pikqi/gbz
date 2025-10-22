@@ -26,14 +26,12 @@ pub const Timer = struct {
             return;
         }
 
-        const IF = emu.mem.getIF();
-
         var tima = emu.mem.getMemoryRegister(.TIMER_TIMA);
         cycles = emu.cpu_cycles + self.tima_remainder_cycles;
         const ticks: u8 = @truncate(cycles / tac_speed);
         tima, const of = @addWithOverflow(tima, ticks);
         if (of > 0) {
-            IF.timer = true;
+            emu.mem.setIFInterupt(.TIMER, true);
             const tma = emu.mem.getMemoryRegister(.TIMER_TMA);
             emu.mem.writeMemoryRegister(.TIMER_TIMA, tma);
         } else {

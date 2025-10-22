@@ -83,8 +83,7 @@ pub const Ppu = struct {
                     return;
                 }
                 if (stat.mode2_int) {
-                    const IF = emu.mem.getIF();
-                    IF.lcd = true;
+                    emu.mem.setIFInterupt(.LCD, true);
                 }
                 stat.ppu_mode = .DRAWING;
                 emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
@@ -100,8 +99,7 @@ pub const Ppu = struct {
                 if (lyc == ly) {
                     stat.coincidence = true;
                     if (stat.lyc_int) {
-                        const IF = emu.mem.getIF();
-                        IF.lcd = true;
+                        emu.mem.setIFInterupt(.LCD, true);
                     }
                 }
 
@@ -125,8 +123,7 @@ pub const Ppu = struct {
                 emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);
                 emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
                 if (stat.mode0_int) {
-                    const IF = emu.mem.getIF();
-                    IF.lcd = true;
+                    emu.mem.setIFInterupt(.LCD, true);
                 }
             },
             // MODE 1
@@ -138,7 +135,7 @@ pub const Ppu = struct {
                 }
                 std.debug.print("vblank ly: {d}\n", .{ly});
                 if (ly == 144) {
-                    emu.mem.getIF().*.vblank = true;
+                    emu.mem.setIFInterupt(.VBLANK, true);
                 }
 
                 if (ly == 152) {
@@ -149,7 +146,7 @@ pub const Ppu = struct {
                 }
 
                 if (stat.mode1_int) {
-                    emu.mem.getIF().*.lcd = true;
+                    emu.mem.setIFInterupt(.LCD, true);
                 }
 
                 emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
