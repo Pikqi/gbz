@@ -5055,7 +5055,6 @@ test "Number of instructions" {
             i += 1;
         }
     }
-    std.debug.print("number of instructions: {d}\n", .{i});
     try std.testing.expectEqual(245, i);
 
     i = 0;
@@ -5065,6 +5064,5 @@ test "Number of instructions" {
         }
     }
 
-    std.debug.print("number of prefixed instructions: {d}\n", .{i});
     try std.testing.expectEqual(256, i);
 }

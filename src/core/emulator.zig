@@ -285,6 +285,7 @@ test "List non implemented instructions" {
         // ilegal instr
         if (instr == null) continue;
         var emu = Emulator.initBootRom();
+        emu.mem.logs_enabled = false;
         emu.cpu.sp = 1000;
         emu.invokeInstruction(instr.?, .{ 0, 0 }) catch |err| {
             if (err == error.NotImplemented) {

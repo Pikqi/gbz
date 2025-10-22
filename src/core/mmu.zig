@@ -75,12 +75,6 @@ pub const Memory = struct {
         }
         return self.mem[addrs];
     }
-    pub fn readPtr(self: *Memory, addrs: usize) !*u8 {
-        if (addrs >= self.mem.len) {
-            return error.MemWriteOutOfBounds;
-        }
-        return &self.mem[addrs];
-    }
 
     pub fn write(self: *Memory, addrs: usize, value: u8) !void {
         if (addrs >= self.mem.len) {

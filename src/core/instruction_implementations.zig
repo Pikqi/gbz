@@ -6,6 +6,7 @@ const InstructionsMod = @import("instructions.zig");
 const OperandPtrTag = enum {
     U8, //8bit cpu register or byte ptr in memory
     U16, // 16bit cpu register PC or SP
+    MEM,
 };
 
 const OperandValueTag = enum {
@@ -23,6 +24,39 @@ const OperandValue = union(OperandValueTag) {
 const OperandPtr = union(OperandPtrTag) {
     U8: *u8,
     U16: *u16,
+    MEM: struct {
+        address: u16,
+        value: u8,
+    },
+    pub fn getByte(self: OperandPtr) !u8 {
+        switch (self) {
+            .U16 => {
+                return error.WriteByteU16;
+            },
+            .U8 => {
+                return self.U8.*;
+            },
+
+            .MEM => {
+                return self.MEM.value;
+            },
+        }
+    }
+
+    pub fn writeByte(self: OperandPtr, value: u8, emu: *Emulator) !void {
+        switch (self) {
+            .U16 => {
+                return error.WriteByteU16;
+            },
+            .U8 => {
+                self.U8.* = value;
+            },
+
+            .MEM => {
+                try emu.mem.write(self.MEM.address, value);
+            },
+        }
+    }
 };
 
 const GetOperandPtrErrors = error{
@@ -108,17 +142,23 @@ pub fn getLeftOperandPtr(
             // todo: check order
             const high: u16 = instruction_params[1];
             const low: u16 = instruction_params[0];
-            const value: u16 = (high << 8) | low;
+            const address: u16 = (high << 8) | low;
 
             if (isPtrToMemory) {
-                return OperandPtr{ .U8 = try emu.mem.readPtr(value) };
+                return OperandPtr{ .MEM = .{
+                    .address = address,
+                    .value = try emu.mem.read(address),
+                } };
             }
             unreachable;
         },
         .U8 => {
             const value: u16 = @intCast(instruction_params[0]);
             if (isPtrToMemory and has_offset) {
-                return OperandPtr{ .U8 = try emu.mem.readPtr(offset + value) };
+                return OperandPtr{ .MEM = .{
+                    .address = offset + value,
+                    .value = try emu.mem.read(offset + value),
+                } };
             }
             unreachable;
         },
@@ -131,15 +171,24 @@ pub fn getLeftOperandPtr(
     if (isPtrToMemory) {
         switch (op) {
             .U16 => {
-                op = OperandPtr{ .U8 = try emu.mem.readPtr(op.U16.*) };
+                const address = op.U16.*;
+                op = OperandPtr{ .MEM = .{
+                    .address = address,
+                    .value = try emu.mem.read(address),
+                } };
             },
             .U8 => {
                 if (has_offset) {
-                    op = OperandPtr{ .U8 = try emu.mem.readPtr(op.U8.* + offset) };
+                    const address = op.U8.* + offset;
+                    op = OperandPtr{ .MEM = .{
+                        .address = address,
+                        .value = try emu.mem.read(address),
+                    } };
                 } else {
                     return error.U8PtrNoOffset;
                 }
             },
+            else => unreachable,
         }
     }
 
@@ -155,25 +204,26 @@ pub fn add(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const adc = instruction.type == .ADC;
     var carry_set = false;
     switch (leftPtr) {
-        .U8 => {
+        .U8, .MEM => {
             const right: u8 = rightValue.U8;
-            const left = leftPtr.U8;
+            var value = try leftPtr.getByte();
             var of: u1 = 0;
 
             if (adc and flags.carry) {
-                flags.half_carry = ((left.* & 0xF) + (right & 0xF) + 1) > 0xF;
+                flags.half_carry = ((value & 0xF) + (right & 0xF) + 1) > 0xF;
 
-                left.*, of = @addWithOverflow(left.*, right);
-                left.*, const adc_of = @addWithOverflow(left.*, 1);
+                value, of = @addWithOverflow(value, right);
+                value, const adc_of = @addWithOverflow(value, 1);
                 of |= adc_of;
             } else {
-                flags.half_carry = ((left.* & 0xF) + (right & 0xF)) > 0xF;
+                flags.half_carry = ((value & 0xF) + (right & 0xF)) > 0xF;
 
-                left.*, of = @addWithOverflow(left.*, right);
+                value, of = @addWithOverflow(value, right);
             }
 
             flags.carry = of == 1;
-            flags.zero = left.* == 0;
+            flags.zero = value == 0;
+            try leftPtr.writeByte(value, emu);
         },
         .U16 => {
             // 0xE8
@@ -241,23 +291,24 @@ pub fn sub(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     }
 
     switch (leftPtr) {
-        .U8 => {
-            const left = leftPtr.U8;
+        .U8, .MEM => {
+            var value = try leftPtr.getByte();
             const right = rightValue.U8;
             var of: u1 = 0;
 
             if (sbc and flags.carry) {
-                flags.half_carry = ((left.* & 0xF) -% (right & 0xF) -% 1) > (left.* & 0xF);
+                flags.half_carry = ((value & 0xF) -% (right & 0xF) -% 1) > (value & 0xF);
 
-                left.*, const sbc_of = @subWithOverflow(left.*, 1);
-                left.*, of = @subWithOverflow(left.*, right);
+                value, const sbc_of = @subWithOverflow(value, 1);
+                value, of = @subWithOverflow(value, right);
                 of |= sbc_of;
             } else {
-                flags.half_carry = ((left.* & 0xF) -% (rightValue.U8 & 0xF)) > (left.* & 0xF);
-                left.*, of = @subWithOverflow(left.*, right);
+                flags.half_carry = ((value & 0xF) -% (rightValue.U8 & 0xF)) > (value & 0xF);
+                value, of = @subWithOverflow(value, right);
             }
             flags.carry = of == 1;
-            flags.zero = left.* == 0;
+            flags.zero = value == 0;
+            try leftPtr.writeByte(value, emu);
         },
 
         .U16 => {
@@ -297,11 +348,10 @@ pub fn ld(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_
     }
 
     switch (leftPtr) {
-        .U8 => {
-            const left = leftPtr.U8;
+        .U8, .MEM => {
             switch (rightValue) {
                 .U8 => {
-                    left.* = rightValue.U8;
+                    try leftPtr.writeByte(rightValue.U8, emu);
                 },
                 else => unreachable,
             }
@@ -394,18 +444,19 @@ pub fn inc(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const flags = emu.cpu.getFlagsRegister();
 
     switch (operand) {
-        .U8 => {
-            const value = operand.U8.*;
+        .U8, .MEM => {
+            var value = try operand.getByte();
             var of: u1 = 0;
             const half_carry = ((value & 0xF) +% 1) > 0xF;
 
-            operand.U8.*, of = @addWithOverflow(operand.U8.*, 1);
+            value, of = @addWithOverflow(value, 1);
+            try operand.writeByte(value, emu);
 
             if (instruction.flags.half_carry == .DEPENDENT) {
                 flags.half_carry = half_carry;
             }
             if (instruction.flags.zero == .DEPENDENT) {
-                flags.zero = operand.U8.* == 0;
+                flags.zero = value == 0;
             }
         },
 
@@ -419,18 +470,20 @@ pub fn dec(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     const flags = emu.cpu.getFlagsRegister();
 
     switch (operand) {
-        .U8 => {
+        .U8, .MEM => {
+            var value = try operand.getByte();
             var of: u1 = 0;
 
-            const half_carry = ((operand.U8.* & 0xF) -% 1) == 0xFF;
+            const half_carry = ((value & 0xF) -% 1) == 0xFF;
 
-            operand.U8.*, of = @subWithOverflow(operand.U8.*, 1);
+            value, of = @subWithOverflow(value, 1);
+            try operand.writeByte(value, emu);
 
             if (instruction.flags.half_carry == .DEPENDENT) {
                 flags.half_carry = half_carry;
             }
             if (instruction.flags.zero == .DEPENDENT) {
-                flags.zero = operand.U8.* == 0;
+                flags.zero = value == 0;
             }
         },
 
@@ -715,88 +768,93 @@ pub fn rotate(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
     const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
-    if (leftPtr != .U8) {
-        return;
+    if (leftPtr == .U16) {
+        return error.OperandProhibited;
     }
     const prev_carry = @intFromBool(flags.carry);
-    const operand = leftPtr.U8;
-    const b0: u1 = @intCast(operand.* & 0b1);
-    const b7: u1 = @intCast(operand.* >> 7);
+    var operand = try leftPtr.getByte();
+    const b0: u1 = @intCast(operand & 0b1);
+    const b7: u1 = @intCast(operand >> 7);
 
     switch (instruction.type) {
         .RL => {
-            operand.*, _ = @shlWithOverflow(operand.*, 1);
+            operand, _ = @shlWithOverflow(operand, 1);
             flags.carry = b7 == 1;
-            operand.* |= prev_carry;
+            operand |= prev_carry;
         },
         .RLC => {
-            operand.*, _ = @shlWithOverflow(operand.*, 1);
+            operand, _ = @shlWithOverflow(operand, 1);
             flags.carry = b7 == 1;
-            operand.* |= b7;
+            operand |= b7;
         },
         .RR => {
-            operand.* >>= 1;
+            operand >>= 1;
             flags.carry = b0 > 0;
-            operand.* |= (@as(u8, @intCast(prev_carry)) << 7);
+            operand |= (@as(u8, @intCast(prev_carry)) << 7);
         },
         .RRC => {
-            operand.* >>= 1;
+            operand >>= 1;
             flags.carry = b0 == 1;
-            operand.* |= (@as(u8, @intCast(b0)) << 7);
+            operand |= (@as(u8, @intCast(b0)) << 7);
         },
         else => {
             return error.OperandProhibited;
         },
     }
-    flags.zero = operand.* == 0;
+    flags.zero = operand == 0;
+    try leftPtr.writeByte(operand, emu);
 }
 
 pub fn sla(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
     const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
-    if (leftPtr != .U8) {
-        return error.OperatorIsNotAPointer;
+    if (leftPtr == .U16) {
+        return error.OperandProhibited;
     }
-    const operand = leftPtr.U8;
+    const operand = try leftPtr.getByte();
 
-    operand.*, const of = @shlWithOverflow(operand.*, 1);
+    const new_value, const of = @shlWithOverflow(operand, 1);
     flags.carry = of == 1;
-    flags.zero = operand.* == 0;
+    flags.zero = new_value == 0;
+    try leftPtr.writeByte(new_value, emu);
 }
 
 pub fn sra(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
     const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
-    if (leftPtr != .U8) {
-        return error.OperatorIsNotAPointer;
+    if (leftPtr == .U16) {
+        return error.OperandProhibited;
     }
-    const operand = leftPtr.U8;
-    const b7: u8 = operand.* & (1 << 7);
-    const b0: u1 = @intCast(operand.* & 1);
+    var operand = try leftPtr.getByte();
+    const b7: u8 = operand & (1 << 7);
+    const b0: u1 = @intCast(operand & 1);
 
-    operand.* >>= 1;
-    operand.* |= b7;
+    operand >>= 1;
+    operand |= b7;
+
+    try leftPtr.writeByte(operand, emu);
 
     flags.carry = b0 == 1;
-    flags.zero = operand.* == 0;
+    flags.zero = operand == 0;
 }
 
 pub fn srl(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const flags = emu.cpu.getFlagsRegister();
 
     const leftPtr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
-    if (leftPtr != .U8) {
-        return error.OperatorIsNotAPointer;
+    if (leftPtr == .U16) {
+        return error.OperandProhibited;
     }
-    const operand = leftPtr.U8;
-    const lowest_bit = operand.* & 1;
+    var operand = try leftPtr.getByte();
+    const lowest_bit = operand & 1;
 
-    operand.* >>= 1;
+    operand >>= 1;
+    try leftPtr.writeByte(operand, emu);
 
     flags.carry = lowest_bit > 0;
-    flags.zero = operand.* == 0;
+    flags.zero = operand == 0;
 }
 
 pub fn bit(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
@@ -822,28 +880,28 @@ pub fn swap(emu: *Emulator, instruction: InstructionsMod.Instruction) !void {
     const operand_ptr = try getLeftOperandPtr(emu, instruction, .{ 0, 0 });
     const flags = emu.cpu.getFlagsRegister();
 
-    if (operand_ptr != .U8) {
+    if (operand_ptr == .U16) {
         std.log.err("SWAP Operand not u8", .{});
         return error.OperandProhibited;
     }
-    const value = operand_ptr.U8;
-    const lower: u8 = value.* & 0b1111;
-    const higher: u8 = value.* & (0b1111 << 4);
-    const new = (lower << 4) | higher >> 4;
+    var value = try operand_ptr.getByte();
+    const lower: u8 = value & 0b1111;
+    const higher: u8 = value & (0b1111 << 4);
+    value = (lower << 4) | higher >> 4;
+    try operand_ptr.writeByte(value, emu);
 
-    value.* = new;
-    flags.*.zero = operand_ptr.U8.* == 0;
+    flags.*.zero = value == 0;
 }
 
 pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
 
-    var right_value_ptr: *u8 = undefined;
+    var right_value: u8 = undefined;
     // if its a ptr to memory then it must be (HL)
     if (instruction.rightOperandPointer) {
-        right_value_ptr = try emu.mem.readPtr(emu.cpu.getU16Register(.HL).*);
+        right_value = try emu.mem.read(emu.cpu.getU16Register(.HL).*);
     } else {
-        right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
+        right_value = emu.cpu.getU8Register(instruction.rightOperand).*;
     }
 
     if (leftValue != .U8) {
@@ -859,18 +917,24 @@ pub fn res(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
 
     var mask: u8 = 0xFF;
     mask ^= selection_bit;
-    right_value_ptr.* &= mask;
+    const new_value = right_value & mask;
+    if (instruction.rightOperandPointer) {
+        try emu.mem.write(emu.cpu.getU16Register(.HL).*, new_value);
+    } else {
+        emu.cpu.getU8Register(instruction.rightOperand).* = new_value;
+    }
 }
 
 pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction_params: [2]u8) !void {
     const leftValue = try getOperandValue(emu, true, instruction, instruction_params);
     const rightValue = try getOperandValue(emu, false, instruction, instruction_params);
 
-    var right_value_ptr: *u8 = undefined;
+    var right_value: u8 = undefined;
+    // if its a ptr to memory then it must be (HL)
     if (instruction.rightOperandPointer) {
-        right_value_ptr = try emu.mem.readPtr(emu.cpu.getU16Register(.HL).*);
+        right_value = try emu.mem.read(emu.cpu.getU16Register(.HL).*);
     } else {
-        right_value_ptr = emu.cpu.getU8Register(instruction.rightOperand);
+        right_value = emu.cpu.getU8Register(instruction.rightOperand).*;
     }
 
     if (leftValue != .U8 or rightValue != .U8) {
@@ -884,5 +948,10 @@ pub fn set(emu: *Emulator, instruction: InstructionsMod.Instruction, instruction
     }
     const selection_bit: u8 = @as(u8, 1) << @intCast(leftValue.U8);
 
-    right_value_ptr.* |= selection_bit;
+    const new_value = right_value | selection_bit;
+    if (instruction.rightOperandPointer) {
+        try emu.mem.write(emu.cpu.getU16Register(.HL).*, new_value);
+    } else {
+        emu.cpu.getU8Register(instruction.rightOperand).* = new_value;
+    }
 }
