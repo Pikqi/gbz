@@ -11,6 +11,17 @@ pub const LCDStat = packed struct(u8) {
     _unused: u1 = 1,
 };
 
+pub const LCDC = packed struct(u8) {
+    enable_bg_window: bool,
+    enable_obj: bool,
+    obj_size: bool,
+    bg_tile_map: bool,
+    bg_window_tiles: bool,
+    window_enable: bool,
+    window_tilemap_select: bool,
+    enabled: bool,
+};
+
 pub const PalleteColors = enum(u2) {
     WHITE,
     LIGHT_GRAY,
@@ -65,6 +76,10 @@ pub const Ppu = struct {
     ticks: usize = 0,
 
     pub fn tick(self: *Ppu, ticks: usize) void {
+        const lcdc = self.getLCDC();
+        if (!lcdc.enabled) {
+            return;
+        }
         self.ticks += ticks;
         const emu = self.getEmu();
         var stat = self.getStat();
@@ -173,6 +188,9 @@ pub const Ppu = struct {
     }
     fn getStat(self: *Ppu) LCDStat {
         return @bitCast(self.getEmu().mem.getMemoryRegister(.PPU_STAT));
+    }
+    fn getLCDC(self: *Ppu) LCDC {
+        return @bitCast(self.getEmu().mem.getMemoryRegister(.PPU_LCDC));
     }
 
     fn getEmu(self: *Ppu) *Emulator {
