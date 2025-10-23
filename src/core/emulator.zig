@@ -123,6 +123,12 @@ pub const Emulator = struct {
             try self.handle_interupts();
             self.cpu_cycles_total += self.cpu_cycles;
             self.ppu.tick(self.cpu_cycles);
+
+            if (self.doctor) |doc| {
+                if (doc.limit_reached) {
+                    return;
+                }
+            }
         }
     }
 

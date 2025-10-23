@@ -6,6 +6,9 @@ var buffer: [1024]u8 = undefined;
 pub const DoctorLogger = struct {
     emu: *Emulator,
     file_writer: std.fs.File.Writer,
+    line_limit: ?usize = null,
+    lines_printed: usize = 0,
+    limit_reached: bool = false,
     pub fn initWithFile(emu: *Emulator, file_path: []const u8) !DoctorLogger {
         const file = try std.fs.cwd().createFile(file_path, .{ .truncate = true });
         const doc = DoctorLogger{ .emu = emu, .file_writer = file.writerStreaming(&buffer) };
@@ -19,6 +22,9 @@ pub const DoctorLogger = struct {
     }
 
     pub fn log(self: *DoctorLogger) !void {
+        if (self.limit_reached) {
+            return;
+        }
         const pc = self.emu.cpu.pc;
         if (pc >= self.emu.mem.mem.len - 4) {
             return;
@@ -43,6 +49,12 @@ pub const DoctorLogger = struct {
             pcmem[3],
         });
         try self.file_writer.interface.flush();
+        self.lines_printed += 1;
+        if (self.line_limit) |limit| {
+            if (self.lines_printed >= limit) {
+                self.limit_reached = true;
+            }
+        }
     }
 };
 

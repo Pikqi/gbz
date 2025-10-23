@@ -97,4 +97,20 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_exe_unit_tests.step);
     test_step.dependOn(&run_core_unit_tests.step);
+
+    // Testing module
+    const testing_module = b.createModule(.{
+        .root_source_file = b.path("src/testing/root.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{.{
+            .name = "core",
+            .module = core,
+        }},
+    });
+
+    const testing_test = b.addTest(.{ .root_module = testing_module });
+    const run_longer_test = b.addRunArtifact(testing_test);
+    const testing_module_step = b.step("test-long", "Run longer tests");
+    testing_module_step.dependOn(&run_longer_test.step);
 }
