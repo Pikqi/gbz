@@ -41,7 +41,7 @@ pub const TilePixels = [8][8]PalleteColors;
 pub const Tile = packed struct(u128) {
     data: u128,
 
-    pub fn fromSlice(slice: []u8) !Tile {
+    pub fn fromSlice(slice: []const u8) !Tile {
         if (slice.len != 16) {
             return error.TileMustBe16B;
         }
@@ -55,7 +55,7 @@ pub const Tile = packed struct(u128) {
         var pixels = std.mem.zeroes(TilePixels);
         for (pixels[0..], 0..) |*row, ri| {
             const shift_amount: u7 = @intCast(8 * (15 - ri * 2));
-            const shift_amount_lower: u7 = shift_amount - 1;
+            const shift_amount_lower: u7 = shift_amount - 8;
 
             const higher: u8 = @intCast((self.data >> shift_amount) & 0xFF);
             const lower: u8 = @intCast((self.data >> shift_amount_lower) & 0xFF);
@@ -172,12 +172,10 @@ pub const Ppu = struct {
     }
     pub fn getVRAMPixels(self: *Ppu) [128 * 4]TilePixels {
         var pixel_tiles = std.mem.zeroes([128 * 4]TilePixels);
-        var pi: usize = 0;
         const vram = self.getVRAM();
         for (0..vram.len / 16) |i| {
             const tile = Tile.fromSlice(vram[i * 16 .. (i + 1) * 16]) catch unreachable;
-            pixel_tiles[pi] = tile.toPixels();
-            pi += 1;
+            pixel_tiles[i] = tile.toPixels();
         }
         return pixel_tiles;
     }
@@ -248,4 +246,27 @@ test "LCDStat" {
     try std.testing.expect(stat.mode1_int);
     try std.testing.expect(!stat.mode2_int);
     try std.testing.expect(!stat.lyc_int);
+}
+
+test "Tile from slice" {
+    const slice: [16]u8 = .{ 0x3C, 0x7E, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x7E, 0x5E, 0x7E, 0x0A, 0x7C, 0x56, 0x38, 0x7C };
+    const expected_tile_bytes: u128 = 0x3C7E4242424242427E5E7E0A7C56387C;
+    const tile = try Tile.fromSlice(&slice);
+    const expected_pixels = blk: {
+        var p = std.mem.zeroes([8][8]u2);
+        p[0] = .{ 0b00, 0b10, 0b11, 0b11, 0b11, 0b11, 0b10, 0b00 };
+        p[1] = .{ 0b00, 0b11, 0b00, 0b00, 0b00, 0b00, 0b11, 0b00 };
+        p[2] = .{ 0b00, 0b11, 0b00, 0b00, 0b00, 0b00, 0b11, 0b00 };
+        p[3] = .{ 0b00, 0b11, 0b00, 0b00, 0b00, 0b00, 0b11, 0b00 };
+        p[4] = .{ 0b00, 0b11, 0b01, 0b11, 0b11, 0b11, 0b11, 0b00 };
+        p[5] = .{ 0b00, 0b01, 0b01, 0b01, 0b11, 0b01, 0b11, 0b00 };
+        p[6] = .{ 0b00, 0b11, 0b01, 0b11, 0b01, 0b11, 0b10, 0b00 };
+        p[7] = .{ 0b00, 0b10, 0b11, 0b11, 0b11, 0b10, 0b00, 0b00 };
+        break :blk @as(TilePixels, @bitCast(p));
+    };
+
+    try std.testing.expectEqual(expected_tile_bytes, tile.data);
+
+    const pixels = tile.toPixels();
+    try std.testing.expectEqual(expected_pixels, pixels);
 }
