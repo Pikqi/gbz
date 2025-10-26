@@ -44,7 +44,8 @@ pub const Memory = struct {
     logs_enabled: bool = true,
     rom_banks: [8][]u8 = undefined,
     boot_rom_mapped: bool = false,
-    boot_rom: ?[256]u8 = undefined,
+    boot_rom: [256]u8 = undefined,
+    rom_bank_selected: usize = 1,
 
     // FF0F
     pub fn getIF(self: *Memory) InteruptFlag {
@@ -72,12 +73,15 @@ pub const Memory = struct {
         return switch (@as(u16, @intCast(addr))) {
             0x0...0xFF => {
                 if (self.boot_rom_mapped) {
-                    return &self.boot_rom.?[addr];
+                    return &self.boot_rom[addr];
                 }
 
                 return &self.mem[addr];
             },
             0x0100...0x3FFF, // ROM BANK 0
+            => {
+                return &self.rom_banks[0][addr];
+            },
             0xD000...0xDFFF, // WRAM 2
             0xFE00...0xFE9F, // OAM
             0xFF00...0xFF7F, // IO Registers
@@ -108,9 +112,7 @@ pub const Memory = struct {
             },
             //ROM BANK NN
             0x4000...0x7FFF => {
-                return &self.mem[addr];
-                // TODO actual banking
-                // return &self.rom_banks[0][addr - 0x4000];
+                return &self.rom_banks[self.rom_bank_selected][addr - 0x4000];
             },
             // Not usable
             0xFEA0...0xFEFF => {
@@ -159,11 +161,11 @@ pub const Memory = struct {
         self.boot_rom_mapped = true;
     }
 
-    pub fn zero(self: *Memory) void {
+    pub fn zeroNonBanks(self: *Memory) void {
         const old_logs = self.logs_enabled;
         self.logs_enabled = false;
 
-        for (0..0x10000) |i| {
+        for (0x8000..0x10000) |i| {
             self.write(i, 0) catch unreachable;
         }
         self.logs_enabled = old_logs;

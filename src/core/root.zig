@@ -5,6 +5,7 @@ pub const emulator = @import("emulator.zig");
 pub const instructions = @import("instructions.zig");
 pub const mmu = @import("mmu.zig");
 pub const ppu = @import("ppu.zig");
+pub const Cartridge = @import("cartridge.zig").Cartridge;
 
 test "import" {
     _ = @import("cpu.zig");

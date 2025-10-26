@@ -29,7 +29,11 @@ pub const DoctorLogger = struct {
         if (pc >= self.emu.mem.mem.len - 4) {
             return;
         }
-        const pcmem = try self.emu.mem.getSlice(pc, pc + 4);
+        // const pcmem = try self.emu.mem.getSlice(pc, pc + 4);
+        var pcmem: [4]u8 = undefined;
+        for (&pcmem, 0..) |*m, i| {
+            m.* = try self.emu.mem.read(pc + i);
+        }
         const c = &self.emu.cpu;
 
         try self.file_writer.interface.print("A:{X:02} F:{X:02} B:{X:02} C:{X:02} D:{X:02} E:{X:02} H:{X:02} L:{X:02} SP:{X:04} PC:{X:04} PCMEM:{X:02},{X:02},{X:02},{X:02}\n", .{
@@ -60,7 +64,7 @@ pub const DoctorLogger = struct {
 
 // todo write bytes to a buffer and test against that buffer
 test "doctorLogger test" {
-    var emu = Emulator.initBootRom();
+    var emu = Emulator.initZero();
     emu.cpu.getU8Register(.A).* = 0x01;
     emu.cpu.getU8Register(.F).* = 0xB0;
     emu.cpu.getU8Register(.B).* = 0x00;

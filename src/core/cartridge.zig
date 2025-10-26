@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const CHeaderCSStart = 0x134;
 const CHeaderCSEnd = 0x14D;
+const BANK_SIZE = 16 * 1024;
 
 const CartridgeHeader = struct {
     name: []u8,
@@ -63,13 +64,18 @@ pub const Cartridge = struct {
     contents: []u8,
     alloc: Allocator,
     ch: CartridgeHeader,
+    banks: [8][]u8 = undefined,
 
     pub fn loadFromFile(fileName: []const u8, alloc: Allocator) !Cartridge {
+        std.debug.print("filename: {s}\n", .{fileName});
         const file = try std.fs.cwd().openFile(fileName, .{});
         const contents = try file.readToEndAlloc(alloc, 8096 * 1024);
 
         var c = Cartridge{ .contents = contents, .alloc = alloc, .ch = undefined };
         try c.parseHeader();
+        for (0..c.ch.rom_banks) |i| {
+            c.banks[i] = contents[i * BANK_SIZE .. (i + 1) * BANK_SIZE];
+        }
         return c;
     }
     fn parseHeader(self: *Cartridge) !void {
@@ -111,7 +117,7 @@ pub const Cartridge = struct {
         }
     }
 
-    pub fn destroy(self: *Cartridge) void {
+    pub fn deinit(self: *Cartridge) void {
         self.alloc.free(self.contents);
     }
 

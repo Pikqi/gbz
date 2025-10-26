@@ -1,14 +1,12 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 
 const core = @import("core");
 const Emulator = core.emulator.Emulator;
+const Cartridge = core.Cartridge;
 const PalleteColors = core.ppu.PalleteColors;
 const rl = @import("raylib");
 
-const Catridge = @import("cartridge.zig").Cartridge;
-
-const boot_rom = @embedFile("dmg_boot.bin");
+const boot_rom = @import("bootrom.zig").rom;
 
 const scale = 4;
 
@@ -23,28 +21,13 @@ const TILES_PER_ROW = WIDTH / TILE_SIZE;
 
 const HEIGHT = GB_HEIGHT * scale + (VRAM_TILES / TILES_PER_ROW) * TILE_SIZE;
 
-pub fn raylibMain(alloc: Allocator) !void {
-    const file_name = "roms/dmg-acid2.gb";
-    // const file_name = "roms/Tetris (World) (Rev 1).gb";
-
-    const file = try std.fs.cwd().openFile(file_name, .{});
-    const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
-    defer alloc.free(contents);
-
-    var emu = Emulator.initBootRom();
+pub fn raylibMain(cat: Cartridge) !void {
+    var emu = Emulator.initWithCatridge(cat, &boot_rom);
     emu.run_until_draw = true;
     emu.initDoctorFile("doctor_main.log") catch |err| {
         std.log.err("Failed init doctor file {t}", .{err});
     };
-    var c = try Catridge.loadFromFile(file_name, alloc);
-    defer c.destroy();
-    c.ch.print();
     emu.mem.logs_enabled = false;
-    try emu.load_rom(contents);
-
-    var boot_rom_arr: [256]u8 = undefined;
-    @memcpy(&boot_rom_arr, boot_rom);
-    try emu.runEmuWithBootRom(boot_rom_arr);
 
     rl.initWindow(WIDTH, HEIGHT, "ZGB");
     defer rl.closeWindow();

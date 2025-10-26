@@ -1,6 +1,7 @@
 const std = @import("std");
 const core = @import("core");
 const Emulator = core.emulator.Emulator;
+const Cartridge = core.Cartridge;
 const alloc = std.testing.allocator;
 const log_file_prefix = ".logs/";
 const success_log_prefix = "./doctor_success/";
@@ -67,16 +68,17 @@ fn doctor_test(comptime file_name: []const u8, comptime lines_limit: usize, hash
 }
 
 fn run_emu_with_doctor(comptime file_name: []const u8, comptime lines_limit: usize) !void {
-    const file = try std.fs.cwd().openFile(roms_prefix ++ file_name, .{});
-    const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
-    defer alloc.free(contents);
+    const file_path = roms_prefix ++ file_name;
 
     const log_file_name = log_file_prefix ++ file_name ++ ".log";
     try std.fs.cwd().makePath(log_file_prefix);
-    var emu = Emulator.initBootRom();
+
+    var cat = try Cartridge.loadFromFile(file_path, std.testing.allocator);
+    defer cat.deinit();
+
+    var emu = Emulator.initWithCatridge(cat, null);
     try emu.initDoctorFile(log_file_name);
     emu.doctor.?.line_limit = lines_limit;
-    try emu.load_rom(contents);
     emu.mem.writeMemoryRegister(.PPU_LY, 0x90);
     emu.disable_ppu = true;
     emu.mem.logs_enabled = false;

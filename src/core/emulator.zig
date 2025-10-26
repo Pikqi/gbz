@@ -14,6 +14,7 @@ const InteruptFlag = mmu.InteruptFlag;
 const ppu = @import("ppu.zig");
 const Ppu = ppu.Ppu;
 const Timer = @import("timer.zig").Timer;
+const Cartridge = @import("cartridge.zig").Cartridge;
 
 const LastInstruction = struct {
     id: u8,
@@ -25,6 +26,7 @@ pub const Emulator = struct {
     cpu: Cpu,
     mem: Memory = Memory{},
     ppu: Ppu = Ppu{},
+    cartridge: ?Cartridge = null,
     cb_prefixed: bool = false,
     doctor: ?DoctorLogger = null,
     is_stopped: bool = false,
@@ -45,18 +47,29 @@ pub const Emulator = struct {
         };
     }
 
-    pub fn initBootRom() Emulator {
+    pub fn initWithCatridge(c: Cartridge, bootrom: ?[]const u8) Emulator {
         var emu = Emulator{
-            .cpu = Cpu.initBootRom(),
+            .cpu = undefined,
+            .cartridge = c,
         };
-        emu.mem.zero();
-        emu.mem.write(0xFF44, 0x00) catch unreachable;
+        if (bootrom) |br| {
+            emu.cpu = .initZero();
 
-        // for (0x8000..0x9800) |i| {
-        //     emu.mem.write(i, @intCast(0x44 + i % 0x44)) catch unreachable;
-        // }
+            emu.mem.boot_rom_mapped = true;
+            @memcpy(&emu.mem.boot_rom, br);
+            emu.mem.writeMemoryRegister(.PPU_LY, 0);
+        } else {
+            // Init state after boot rom
+            emu.cpu = .initBootRom();
+            // zero out memory more accuratly
+            emu.mem.zeroNonBanks();
+            emu.mem.write(0xFF44, 0x00) catch unreachable;
+        }
+        emu.mem.rom_banks = c.banks;
+
         return emu;
     }
+
     pub fn initDoctorStdOut(self: *Emulator) !void {
         if (self.doctor != null) {
             return error.DoctorAlreadyExists;
@@ -93,14 +106,6 @@ pub const Emulator = struct {
         const upper: u8 = @intCast((self.cpu.pc) >> 8);
         const lower: u8 = @intCast(self.cpu.pc & 0xFF);
         try self.stackPush(upper, lower);
-    }
-
-    pub fn load_rom(self: *Emulator, rom: []const u8) !void {
-        if (rom.len > self.mem.mem.len - 0x100) {
-            return error.ROMTooBig;
-        }
-        const mem = try self.mem.getSlice(0, @intCast(rom.len));
-        @memcpy(mem, rom);
     }
 
     pub fn runEmuWithBootRom(self: *Emulator, boot_rom: [256]u8) !void {
@@ -310,9 +315,14 @@ test "Try all instructions" {
         const instr = if (i <= 255) instructions[i] else prefixed_instructions[i - 256];
         // ilegal instr
         if (instr == null) continue;
-        var emu = Emulator.initBootRom();
+        var emu = Emulator.initZero();
+        emu.cpu = Cpu.initBootRom();
         emu.mem.logs_enabled = false;
         emu.cpu.sp = 1000;
+        emu.mem.rom_banks[0] = try std.testing.allocator.alloc(u8, 16 * 1024);
+        emu.mem.rom_banks[1] = try std.testing.allocator.alloc(u8, 16 * 1024);
+        defer std.testing.allocator.free(emu.mem.rom_banks[0]);
+        defer std.testing.allocator.free(emu.mem.rom_banks[1]);
         try emu.invokeInstruction(instr.?, .{ 0, 0 });
     }
 }
