@@ -74,6 +74,7 @@ pub const Tile = packed struct(u128) {
 
 pub const Ppu = struct {
     ticks: usize = 0,
+    ready_to_draw: bool = false,
 
     pub fn tick(self: *Ppu, ticks: usize) void {
         const lcdc = self.getLCDC();
@@ -156,6 +157,10 @@ pub const Ppu = struct {
                 if (ly == 152) {
                     emu.mem.writeMemoryRegister(.PPU_LY, 0);
                     stat.ppu_mode = .OAMSCAN;
+                    std.debug.print("Frame over\n", .{});
+                    self.ready_to_draw = true;
+
+                    // _ = self.debugPrintVRAMwithANSI() catch unreachable;
                 } else {
                     emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);
                 }
@@ -168,7 +173,6 @@ pub const Ppu = struct {
             },
         }
         // std.debug.print("{any} \n\n", .{self.getStat()});
-        // _ = self.debugPrintVRAMwithANSI() catch unreachable;
     }
     pub fn getVRAMPixels(self: *Ppu) [128 * 4]TilePixels {
         var pixel_tiles = std.mem.zeroes([128 * 4]TilePixels);

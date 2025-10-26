@@ -37,6 +37,7 @@ pub const Emulator = struct {
     cpu_cycles_total: u64 = 0,
     interupt_handled: bool = false,
     disable_ppu: bool = false,
+    run_until_draw: bool = false,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -137,6 +138,10 @@ pub const Emulator = struct {
                     return;
                 }
             }
+            if (self.run_until_draw and self.ppu.ready_to_draw) {
+                self.ppu.ready_to_draw = false;
+                return;
+            }
         }
     }
 
@@ -218,7 +223,8 @@ pub const Emulator = struct {
         const IE: InteruptFlag = @bitCast(self.mem.getMemoryRegister(.IE));
 
         if (IF.vblank and IE.vblank) {
-            @panic("vblank interupt not implemented!\n");
+            self.mem.setIFInterupt(.VBLANK, false);
+            try self.gotoInterupt(0x0040);
         }
         if (IF.lcd and IE.lcd) {
             std.debug.print("lcd itnerupt\n", .{});

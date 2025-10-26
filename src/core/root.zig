@@ -4,6 +4,7 @@ pub const cpu = @import("cpu.zig");
 pub const emulator = @import("emulator.zig");
 pub const instructions = @import("instructions.zig");
 pub const mmu = @import("mmu.zig");
+pub const ppu = @import("ppu.zig");
 
 test "import" {
     _ = @import("cpu.zig");
