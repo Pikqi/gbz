@@ -148,7 +148,7 @@ pub const Ppu = struct {
                 } else {
                     return;
                 }
-                std.debug.print("vblank ly: {d}\n", .{ly});
+                // std.debug.print("vblank ly: {d}\n", .{ly});
                 if (ly == 144) {
                     emu.mem.setIFInterupt(.VBLANK, true);
                 }

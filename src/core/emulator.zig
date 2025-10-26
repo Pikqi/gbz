@@ -36,6 +36,7 @@ pub const Emulator = struct {
     cpu_cycles: u64 = 0,
     cpu_cycles_total: u64 = 0,
     interupt_handled: bool = false,
+    disable_ppu: bool = false,
 
     pub fn initZero() Emulator {
         return Emulator{
@@ -101,6 +102,11 @@ pub const Emulator = struct {
         @memcpy(mem, rom);
     }
 
+    pub fn runEmuWithBootRom(self: *Emulator, boot_rom: [256]u8) !void {
+        self.mem.mountBootRom(boot_rom);
+        try self.run_emu();
+    }
+
     pub fn run_emu(self: *Emulator) !void {
         errdefer {
             if (self.last_instructinon) |last| {
@@ -122,7 +128,9 @@ pub const Emulator = struct {
             try self.timer.tick();
             try self.handle_interupts();
             self.cpu_cycles_total += self.cpu_cycles;
-            self.ppu.tick(self.cpu_cycles);
+            if (!self.disable_ppu) {
+                self.ppu.tick(self.cpu_cycles);
+            }
 
             if (self.doctor) |doc| {
                 if (doc.limit_reached) {
@@ -196,6 +204,10 @@ pub const Emulator = struct {
         // if (self.steps == 31459) {
         //     self.is_stopped = true;
         // }
+        if (self.cpu.pc >= 0x100 and self.mem.boot_rom_mapped) {
+            self.mem.boot_rom_mapped = false;
+            std.debug.print("boot rom unmapped\n", .{});
+        }
     }
 
     pub fn handle_interupts(self: *Emulator) !void {

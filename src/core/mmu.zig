@@ -1,12 +1,5 @@
 const std = @import("std");
 
-const ROM_BANK_SIZE = 0x4000;
-const VRAM_SIZE = 0x2000;
-const ERAM_SIZE = 0x1000;
-const WRAM_SIZE = 0x1000;
-const ECHO_SIZE = 0x1DFF;
-const SAT_SIZE = 0xFE9F - 0xFE00;
-const HRAM_SIZE = 0xFFFE - 0xFF80;
 const MEM_SIZE = 0x10000;
 
 const MemoryRegisters = enum(u16) {
@@ -48,8 +41,11 @@ pub const InteruptFlag = packed struct(u8) {
 
 pub const Memory = struct {
     mem: [MEM_SIZE]u8 = undefined,
-    rom_bank_selected: u8 = 0,
     logs_enabled: bool = true,
+    rom_banks: [8][]u8 = undefined,
+    boot_rom_mapped: bool = false,
+    boot_rom: ?[256]u8 = undefined,
+
     // FF0F
     pub fn getIF(self: *Memory) InteruptFlag {
         return @bitCast(self.getMemoryRegister(.IF));
@@ -69,21 +65,78 @@ pub const Memory = struct {
         }
     }
 
-    pub fn read(self: *const Memory, addrs: usize) !u8 {
+    fn memoryMap(self: *Memory, addr: usize) !*u8 {
+        if (addr > 0xFFFF) {
+            @panic("Address out of range");
+        }
+        return switch (@as(u16, @intCast(addr))) {
+            0x0...0xFF => {
+                if (self.boot_rom_mapped) {
+                    return &self.boot_rom.?[addr];
+                }
+
+                return &self.mem[addr];
+            },
+            0x0100...0x3FFF, // ROM BANK 0
+            0xD000...0xDFFF, // WRAM 2
+            0xFE00...0xFE9F, // OAM
+            0xFF00...0xFF7F, // IO Registers
+            0xFF80...0xFFFE, // HRAM
+            0xFFFF, // IE
+            => {
+                return &self.mem[addr];
+            },
+            //External ram
+            0xA000...0xBFFF => {
+                return &self.mem[addr];
+            },
+
+            // VRAM
+            0x8000...0x9FFF => {
+                return &self.mem[addr];
+            },
+
+            // WRAM
+            0xC000...0xCFFF => {
+                // todo echo
+                return &self.mem[addr];
+            },
+            0xE000...0xFDFF, // ECHO RAM
+            => {
+                // todo handle echo ram;
+                return &self.mem[addr];
+            },
+            //ROM BANK NN
+            0x4000...0x7FFF => {
+                return &self.mem[addr];
+                // TODO actual banking
+                // return &self.rom_banks[0][addr - 0x4000];
+            },
+            // Not usable
+            0xFEA0...0xFEFF => {
+                // todo handle unusable part
+                return &self.mem[addr];
+            },
+        };
+    }
+
+    pub fn read(self: *Memory, addrs: usize) !u8 {
         if (addrs >= self.mem.len) {
             return error.MemWriteOutOfBounds;
         }
-        return self.mem[addrs];
+        return (try self.memoryMap(addrs)).*;
     }
 
     pub fn write(self: *Memory, addrs: usize, value: u8) !void {
         if (addrs >= self.mem.len) {
             return error.MemWriteOutOfBounds;
         }
+        (try self.memoryMap(addrs)).* = value;
 
-        self.mem[addrs] = value;
         self.writeLog(addrs, value);
     }
+
+    // Dont use this inside of emulator
     pub fn getSlice(self: *Memory, start: usize, end: usize) ![]u8 {
         if (start > end) {
             return error.MemWriteStartBiggerThanEnd;
@@ -94,15 +147,26 @@ pub const Memory = struct {
 
         return self.mem[start..end];
     }
-    pub fn getMemoryRegister(self: *const Memory, reg: MemoryRegisters) u8 {
-        return self.mem[@intFromEnum(reg)];
+    pub fn getMemoryRegister(self: *Memory, reg: MemoryRegisters) u8 {
+        return self.read(@intFromEnum(reg)) catch unreachable;
     }
     pub fn writeMemoryRegister(self: *Memory, reg: MemoryRegisters, value: u8) void {
         self.write(@intFromEnum(reg), value) catch unreachable;
     }
 
+    pub fn mountBootRom(self: *Memory, boot_rom: [256]u8) void {
+        self.boot_rom = boot_rom;
+        self.boot_rom_mapped = true;
+    }
+
     pub fn zero(self: *Memory) void {
-        self.mem = std.mem.zeroes([0x10000]u8);
+        const old_logs = self.logs_enabled;
+        self.logs_enabled = false;
+
+        for (0..0x10000) |i| {
+            self.write(i, 0) catch unreachable;
+        }
+        self.logs_enabled = old_logs;
     }
     fn writeLog(self: *Memory, addrs: usize, value: u8) void {
         if (self.logs_enabled) {

@@ -4,6 +4,7 @@ const core = @import("core");
 const instructions_mod = core.instructions;
 const Emulator = core.emulator.Emulator;
 const Cpu = core.cpu.Cpu;
+const boot_rom = @embedFile("dmg_boot.bin");
 
 const stdow = std.io.getStdOut().writer();
 
@@ -38,12 +39,12 @@ fn disassembler(alloc: std.mem.Allocator) !void {
 
 fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     // const file = try std.fs.cwd().openFile("roms/dmg_boot.bin", .{});
-    const file_name = "roms/dmg-acid2.gb";
+    const file_name = "roms/Tetris (World) (Rev 1).gb";
     const file = try std.fs.cwd().openFile(file_name, .{});
     const contents = try file.readToEndAlloc(alloc, 1024 * 1024);
     defer alloc.free(contents);
 
-    var emu = Emulator.initBootRom();
+    var emu = Emulator.initZero();
     emu.initDoctorFile("doctor_main.log") catch |err| {
         std.log.err("Failed init doctor file {t}", .{err});
     };
@@ -53,7 +54,12 @@ fn simpleExecuteLoop(alloc: std.mem.Allocator) !void {
     // emu.initDoctorStdOut() catch |err| {
     //     std.log.err("Failed init doctor file {t}", .{err});
     // };
+    emu.disable_ppu = true;
+    emu.mem.logs_enabled = false;
     try emu.load_rom(contents);
+    emu.mem.writeMemoryRegister(.PPU_LY, 0x90);
 
-    try emu.run_emu();
+    var boot_rom_arr: [256]u8 = undefined;
+    @memcpy(&boot_rom_arr, boot_rom);
+    try emu.runEmuWithBootRom(boot_rom_arr);
 }

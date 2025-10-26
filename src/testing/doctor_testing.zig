@@ -60,7 +60,6 @@ fn doctor_test(comptime file_name: []const u8, comptime lines_limit: usize, hash
 
     var sum: [64]u8 = undefined;
     std.crypto.hash.Blake3.hash(doctor_all, &sum, .{});
-    std.debug.print("{s} doctor_sum: {X}\n", .{ file_name, sum });
     const sum_hex = std.fmt.bytesToHex(&sum, .upper);
 
     try std.testing.expectEqualStrings(hash, &sum_hex);
@@ -79,6 +78,7 @@ fn run_emu_with_doctor(comptime file_name: []const u8, comptime lines_limit: usi
     emu.doctor.?.line_limit = lines_limit;
     try emu.load_rom(contents);
     emu.mem.writeMemoryRegister(.PPU_LY, 0x90);
+    emu.disable_ppu = true;
     emu.mem.logs_enabled = false;
 
     try emu.run_emu();
