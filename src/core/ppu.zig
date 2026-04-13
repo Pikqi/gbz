@@ -76,6 +76,8 @@ pub const Ppu = struct {
     ticks: usize = 0,
     ready_to_draw: bool = false,
 
+    oam_buffer_for_drawing: [10]?OAMObject = .{ null, null, null, null, null, null, null, null, null, null },
+
     pub fn tick(self: *Ppu, ticks: usize) void {
         const lcdc = self.getLCDC();
         if (!lcdc.enabled) {
@@ -87,11 +89,8 @@ pub const Ppu = struct {
         const ly = emu.mem.getMemoryRegister(.PPU_LY);
         const lyc = emu.mem.getMemoryRegister(.PPU_LYC);
 
-        const stat_int: u8 = @bitCast(stat);
-        _ = stat_int; // autofix
-
         switch (stat.ppu_mode) {
-            // MODE 2
+            // MODE 2 OAM SCAN
             .OAMSCAN => {
                 if (self.ticks >= 80) {
                     self.ticks -= 80;
@@ -101,6 +100,7 @@ pub const Ppu = struct {
                 if (stat.mode2_int) {
                     emu.mem.setIFInterupt(.LCD, true);
                 }
+                self.scanOAM(ly);
                 stat.ppu_mode = .DRAWING;
                 emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
             },
@@ -120,7 +120,6 @@ pub const Ppu = struct {
                 }
 
                 stat.ppu_mode = .HBLANK;
-
                 emu.mem.writeMemoryRegister(.PPU_STAT, @bitCast(stat));
             },
             // MODE 0
@@ -159,8 +158,6 @@ pub const Ppu = struct {
                     stat.ppu_mode = .OAMSCAN;
                     std.debug.print("Frame over\n", .{});
                     self.ready_to_draw = true;
-
-                    // _ = self.debugPrintVRAMwithANSI() catch unreachable;
                 } else {
                     emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);
                 }
@@ -174,6 +171,44 @@ pub const Ppu = struct {
         }
         // std.debug.print("{any} \n\n", .{self.getStat()});
     }
+
+    fn scanOAM(self: *Ppu, ly: u8) void {
+        self.deleteOAMBUffer();
+        var objects_added: usize = 0;
+
+        const oam_memory = self.getEmu().mem.getSlice(0xFE00, 0xFEA0) catch unreachable;
+        for (0..40) |i| {
+            const obj = OAMObject.fromSlice(oam_memory[i * 4 .. i * 4 + 4]);
+
+            if (obj.xposition <= 0) {
+                continue;
+            }
+            if (ly + 16 < obj.yposition) {
+                continue;
+            }
+            // TODO: check sprite height, might be 16 in tall mode
+            if (ly + 16 > obj.yposition + 8) {
+                continue;
+            }
+
+            self.oam_buffer_for_drawing[objects_added] = obj;
+            objects_added += 1;
+            if (objects_added == 10) {
+                break;
+            }
+        }
+
+        if (objects_added > 0) {
+            std.log.debug("{d} tiles in oam for this line\n", .{objects_added});
+        }
+    }
+
+    fn deleteOAMBUffer(self: *Ppu) void {
+        for (0..self.oam_buffer_for_drawing.len) |i| {
+            self.oam_buffer_for_drawing[i] = null;
+        }
+    }
+
     pub fn getVRAMPixels(self: *Ppu) [128 * 4]TilePixels {
         var pixel_tiles = std.mem.zeroes([128 * 4]TilePixels);
         const vram = self.getVRAM();
@@ -232,6 +267,29 @@ pub const Ppu = struct {
         }
         try stdout.print("\x1b[0m", .{});
     }
+};
+
+const OAMObject = struct {
+    yposition: u8,
+    xposition: u8,
+    tile_index: u8,
+    atributes: OAMAtributes,
+    pub fn fromSlice(slice: []const u8) OAMObject {
+        return OAMObject{
+            .yposition = slice[0],
+            .xposition = slice[1],
+            .tile_index = slice[2],
+            .atributes = @bitCast(slice[3]),
+        };
+    }
+};
+const OAMAtributes = packed struct(u8) {
+    cgb_pallete: u3 = 0, // unused on dmg
+    bank: u1 = 0, // unused on dmg
+    dmg_pallete: u1,
+    xflip: u1,
+    yflip: u1,
+    priority: u1,
 };
 
 const colorPalleteAnsiChars = blk: {
