@@ -76,8 +76,11 @@ pub const Ppu = struct {
     ticks: usize = 0,
     ready_to_draw: bool = false,
 
-    oam_buffer_for_drawing: [10]?OAMObject = .{ null, null, null, null, null, null, null, null, null, null },
+    sprite_buffer: [10]?OAMObject = .{ null, null, null, null, null, null, null, null, null, null },
+    frame_buffer: [window_width * window_height]u2 = std.mem.zeroes([window_width * window_height]u2),
 
+    const window_width = 160;
+    const window_height = 144;
     pub fn tick(self: *Ppu, ticks: usize) void {
         const lcdc = self.getLCDC();
         if (!lcdc.enabled) {
@@ -191,7 +194,7 @@ pub const Ppu = struct {
                 continue;
             }
 
-            self.oam_buffer_for_drawing[objects_added] = obj;
+            self.sprite_buffer[objects_added] = obj;
             objects_added += 1;
             if (objects_added == 10) {
                 break;
@@ -204,8 +207,8 @@ pub const Ppu = struct {
     }
 
     fn deleteOAMBUffer(self: *Ppu) void {
-        for (0..self.oam_buffer_for_drawing.len) |i| {
-            self.oam_buffer_for_drawing[i] = null;
+        for (0..self.sprite_buffer.len) |i| {
+            self.sprite_buffer[i] = null;
         }
     }
 
@@ -223,6 +226,7 @@ pub const Ppu = struct {
         const emu = self.getEmu();
         return emu.mem.getSlice(0x8000, 0x97FF) catch unreachable;
     }
+
     fn getStat(self: *Ppu) LCDStat {
         return @bitCast(self.getEmu().mem.getMemoryRegister(.PPU_STAT));
     }
