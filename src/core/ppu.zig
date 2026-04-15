@@ -22,7 +22,7 @@ pub const LCDC = packed struct(u8) {
     enabled: bool,
 };
 
-pub const PalleteColors = enum(u2) {
+pub const PalleteColors = enum(u8) {
     WHITE,
     LIGHT_GRAY,
     DARK_GRAY,
@@ -202,7 +202,7 @@ pub const Ppu = struct {
         }
 
         if (objects_added > 0) {
-            std.log.debug("{d} tiles in oam for this line\n", .{objects_added});
+            //std.log.debug("{d} tiles in oam for this line\n", .{objects_added});
         }
     }
 
@@ -212,14 +212,25 @@ pub const Ppu = struct {
         }
     }
 
-    pub fn getVRAMPixels(self: *Ppu) [128 * 4]TilePixels {
-        var pixel_tiles = std.mem.zeroes([128 * 4]TilePixels);
+    // TODO implement caching per frame
+    pub fn getVRAMPixels(self: *Ppu) [384]TilePixels {
+        var pixel_tiles = std.mem.zeroes([384]TilePixels);
         const vram = self.getVRAM();
         for (0..vram.len / 16) |i| {
             const tile = Tile.fromSlice(vram[i * 16 .. (i + 1) * 16]) catch unreachable;
             pixel_tiles[i] = tile.toPixels();
         }
         return pixel_tiles;
+    }
+
+    pub fn getTileMapPixels(self: *Ppu, lower: bool) [32 * 32]TilePixels {
+        const tilemap = self.getTileMap(lower);
+        const tiles = self.getVRAMPixels();
+        var tilesPixels = std.mem.zeroes([32 * 32]TilePixels);
+        for (0..tilesPixels.len) |i| {
+            tilesPixels[i] = tiles[tilemap[i]];
+        }
+        return tilesPixels;
     }
 
     fn getVRAM(self: *Ppu) []u8 {
@@ -236,6 +247,12 @@ pub const Ppu = struct {
 
     fn getEmu(self: *Ppu) *Emulator {
         return @fieldParentPtr("ppu", self);
+    }
+
+    fn getTileMap(self: *Ppu, lower: bool) []u8 {
+        const start: usize = if (lower) 0x9800 else 0x9BFF;
+        const tilemap = self.getEmu().mem.getSlice(start, start + 1024) catch unreachable;
+        return tilemap;
     }
 
     pub fn debugPrintVRAMwithANSI(self: *Ppu) !void {
