@@ -3,6 +3,7 @@ const std = @import("std");
 const MEM_SIZE = 0x10000;
 
 const MemoryRegisters = enum(u16) {
+    IO_JOY = 0xFF00,
     IF = 0xFF0F,
     IE = 0xFFFF,
     TIMER_DIV = 0xFF04,
@@ -11,6 +12,8 @@ const MemoryRegisters = enum(u16) {
     TIMER_TAC = 0xFF07,
     PPU_LCDC = 0xFF40,
     PPU_STAT = 0xFF41,
+    PPU_SCY = 0xFF42,
+    PPU_SCX = 0xFF43,
     PPU_LY = 0xFF44,
     PPU_LYC = 0xFF45,
     OAM_DMA = 0xFF46,
@@ -132,6 +135,10 @@ pub const Memory = struct {
     pub fn write(self: *Memory, addrs: usize, value: u8) !void {
         if (addrs >= self.mem.len) {
             return error.MemWriteOutOfBounds;
+        }
+        if ((addrs >= 0x0100 and addrs <= 0x3FFF) or (addrs >= 0x4000 and addrs <= 0x7FFF)) {
+            std.log.warn("Tried to write to rom, at address 0x{X}", .{addrs});
+            return;
         }
         (try self.memoryMap(addrs)).* = value;
 
