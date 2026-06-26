@@ -30,20 +30,28 @@ const JsonStruct = struct {
     cbprefixed: []InstructionO,
 };
 
-const cb = false;
-
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const alloc = gpa.allocator();
-    defer _ = gpa.deinit();
+    const alloc = std.heap.page_allocator;
 
+    var stdout_buffer: [4096]u8 = undefined;
+    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
+    const out = &stdout_writer.interface;
+
+    try generateSet(alloc, out, false);
+    try out.print("\n", .{});
+    try generateSet(alloc, out, true);
+    out.flush() catch {};
+}
+
+fn generateSet(alloc: std.mem.Allocator, out: *std.io.Writer, cb: bool) !void {
     const json_file = try std.fs.cwd().openFile("normal.json", .{});
-
-    const contents = try json_file.readToEndAlloc(alloc, 100000000);
+    const contents = try json_file.readToEndAlloc(alloc, 100_000_000);
     defer alloc.free(contents);
 
     const r = try std.json.parseFromSlice(JsonStruct, alloc, contents, .{ .ignore_unknown_fields = true, .parse_numbers = true, .allocate = .alloc_always });
     defer r.deinit();
+
+    try out.print("\n// === {s} ===\n", .{if (cb) "CB-prefixed" else "unprefixed"});
 
     var map = std.AutoArrayHashMap(usize, Instruction).init(alloc);
     defer map.deinit();
@@ -55,7 +63,7 @@ pub fn main() !void {
             .name = instr.mnemonic,
             .length = @intFromFloat(instr.bytes),
             .type = .UNIMPLEMENTED,
-            .tcycle = @intFromFloat(instr.cycles[0] / 4),
+            .tcycle = @intFromFloat(instr.cycles[0]),
         };
         // Cb prefixed instructions are tagged as 2 bytes long, and 0xCB is tagged as 1 byte long
         // which makes cb prefixed instuctions look like 3 bytes long
@@ -63,9 +71,11 @@ pub fn main() !void {
             i.length -= 1;
         }
         if (instr.cycles.len == 2) {
-            i.tcycle = @intFromFloat(instr.cycles[1] / 4);
-            i.alt_tcycle = @intFromFloat(instr.cycles[0] / 4);
-            i.alt_tcycle.? -= i.tcycle;
+            // JSON format: cycles[0] = taken cost, cycles[1] = not-taken cost.
+            // We store tcycle as the base (not-taken) and alt_tcycle as the
+            // extra t-cycles added when the branch is taken.
+            i.tcycle = @intFromFloat(instr.cycles[1]);
+            i.alt_tcycle = @as(u8, @intFromFloat(instr.cycles[0])) - i.tcycle;
         }
 
         const inst_type = std.meta.stringToEnum(InstructionMod.InstructionType, instr.mnemonic);
@@ -256,8 +266,9 @@ pub fn main() !void {
 
     var map_iter = map.iterator();
     while (map_iter.next()) |entry| {
-        dumpDefinition(entry.value_ptr.*, entry.key_ptr.*);
+        try dumpDefinition(entry.value_ptr.*, entry.key_ptr.*, cb, out);
     }
+    try out.flush();
 }
 
 fn parseFlags(f: FlagsO) InstructionMod.InstructionFlagRegister {
@@ -281,57 +292,57 @@ fn parseFlag(str: []u8) InstructionMod.InstructionFlag {
     }
 }
 
-pub fn dumpDefinition(inst: Instruction, key: usize) void {
-    std.debug.print("\n\n", .{});
-    std.debug.print("t_instructions[0x{X}] = Instruction{{", .{key});
-    // std.debug.print(".name = \"{s}\",", .{inst.name});
-    genereateMnemonic(inst, key);
-    std.debug.print(".type = .{t},", .{inst.type});
+pub fn dumpDefinition(inst: Instruction, key: usize, cb: bool, out: *std.io.Writer) !void {
+    try out.print("\n\n", .{});
+    try out.print("t_instructions[0x{X}] = Instruction{{", .{key});
+    // out.print(".name = \"{s}\",", .{inst.name});
+    try genereateMnemonic(inst, key, cb, out);
+    try out.print(".type = .{t},", .{inst.type});
     if (inst.leftOperand != .NONE) {
-        std.debug.print(".leftOperand = .{t},", .{inst.leftOperand});
+        try out.print(".leftOperand = .{t},", .{inst.leftOperand});
     }
     if (inst.leftOperandPointer) {
-        std.debug.print(".leftOperandPointer = true,", .{});
+        try out.print(".leftOperandPointer = true,", .{});
     }
 
     if (inst.rightOperand != .NONE) {
-        std.debug.print(".rightOperand = .{t},", .{inst.rightOperand});
+        try out.print(".rightOperand = .{t},", .{inst.rightOperand});
     }
     if (inst.rightOperandPointer) {
-        std.debug.print(".rightOperandPointer = true,", .{});
+        try out.print(".rightOperandPointer = true,", .{});
     }
 
     if (inst.condition != .NONE) {
-        std.debug.print(".condition = .{t},", .{inst.condition});
+        try out.print(".condition = .{t},", .{inst.condition});
     }
 
     if (inst.offset_left != 0) {
-        std.debug.print(".offset_left = 0x{X},", .{inst.offset_left});
+        try out.print(".offset_left = 0x{X},", .{inst.offset_left});
     }
     if (inst.offset_right != 0) {
-        std.debug.print(".offset_right = 0x{X},", .{inst.offset_right});
+        try out.print(".offset_right = 0x{X},", .{inst.offset_right});
     }
     if (inst.number) |n| {
-        std.debug.print(".number = 0x{X},", .{n});
+        try out.print(".number = 0x{X},", .{n});
     }
     if (inst.increment != .NONE) {
-        std.debug.print(".increment = .{t},", .{inst.increment});
+        try out.print(".increment = .{t},", .{inst.increment});
     }
     if (inst.decrement != .NONE) {
-        std.debug.print(".decrement = .{t},", .{inst.decrement});
+        try out.print(".decrement = .{t},", .{inst.decrement});
     }
 
-    std.debug.print(".length = {d},", .{inst.length});
-    std.debug.print(".tcycle = {d},", .{inst.tcycle});
+    try out.print(".length = {d},", .{inst.length});
+    try out.print(".tcycle = {d},", .{inst.tcycle});
     if (inst.alt_tcycle) |t| {
-        std.debug.print(".alt_tcycle = {d},", .{t});
+        try out.print(".alt_tcycle = {d},", .{t});
     }
     if (!checkFlagsUnmodified(inst.flags)) {
-        std.debug.print(".flags = {any},", .{inst.flags});
+        try out.print(".flags = {any},", .{inst.flags});
     }
-    std.debug.print("}};", .{});
+    try out.print("}};", .{});
 
-    std.debug.print("\n", .{});
+    try out.print("\n", .{});
     // t_instructions[0xFE] = Instruction{
     //     .name = "CP A,u8 - 0xFE",
     //     .type = .CP,
@@ -348,66 +359,66 @@ pub fn dumpDefinition(inst: Instruction, key: usize) void {
     // };
 
 }
-fn genereateMnemonic(i: Instruction, key: usize) void {
-    std.debug.print(".name = \"{t} ", .{i.type});
+fn genereateMnemonic(i: Instruction, key: usize, cb: bool, out: *std.io.Writer) !void {
+    try out.print(".name = \"{t} ", .{i.type});
     if (key == 0xF8 and !cb) {
-        std.debug.print("HL,(SP)+i8 - 0x{X}\",", .{key});
+        try out.print("HL,(SP)+i8 - 0x{X}\",", .{key});
         return;
     }
 
     if (i.condition != .NONE) {
-        std.debug.print("{t}, ", .{i.condition});
+        try out.print("{t}, ", .{i.condition});
     }
 
     if (i.leftOperand != .NONE) {
         if (i.leftOperandPointer) {
-            std.debug.print("(", .{});
+            try out.print("(", .{});
         }
         if (i.offset_left != 0) {
-            std.debug.print("{X}+", .{i.offset_left});
+            try out.print("{X}+", .{i.offset_left});
         }
         if (i.leftOperand == .NUMBER) {
-            std.debug.print("{d}", .{i.number.?});
+            try out.print("{d}", .{i.number.?});
         } else {
-            std.debug.print("{t}", .{i.leftOperand});
+            try out.print("{t}", .{i.leftOperand});
         }
         if (i.increment == .LEFT) {
-            std.debug.print("+", .{});
+            try out.print("+", .{});
         }
         if (i.decrement == .LEFT) {
-            std.debug.print("-", .{});
+            try out.print("-", .{});
         }
 
         if (i.leftOperandPointer) {
-            std.debug.print(")", .{});
+            try out.print(")", .{});
         }
 
         if (i.rightOperand != .NONE) {
-            std.debug.print(",", .{});
+            try out.print(",", .{});
             if (i.rightOperandPointer) {
-                std.debug.print("(", .{});
+                try out.print("(", .{});
             }
 
             if (i.offset_right != 0) {
-                std.debug.print("{X}+", .{i.offset_right});
+                try out.print("{X}+", .{i.offset_right});
             }
-            std.debug.print("{t}", .{i.rightOperand});
+            try out.print("{t}", .{i.rightOperand});
 
             if (i.increment == .RIGHT) {
-                std.debug.print("+", .{});
+                try out.print("+", .{});
             }
             if (i.decrement == .RIGHT) {
-                std.debug.print("-", .{});
+                try out.print("-", .{});
             }
             if (i.rightOperandPointer) {
-                std.debug.print(")", .{});
+                try out.print(")", .{});
             }
         }
     }
 
-    std.debug.print(" - 0x{X}", .{key});
+    try out.print(" - 0x{X}", .{key});
 
-    std.debug.print("\",", .{});
+    try out.print("\",", .{});
 }
 
 fn checkFlagsUnmodified(f: InstructionMod.InstructionFlagRegister) bool {
