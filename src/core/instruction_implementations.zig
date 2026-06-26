@@ -677,7 +677,7 @@ pub fn stop(emu: *Emulator) void {
 
 pub fn halt(emu: *Emulator) void {
     emu.cpu.is_halted = true;
-    std.debug.print("Halted", .{});
+    std.debug.print("------Halted------\n", .{});
 }
 
 pub fn daa(emu: *Emulator) void {

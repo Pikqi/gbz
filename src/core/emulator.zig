@@ -66,6 +66,7 @@ pub const Emulator = struct {
             emu.mem.write(0xFF44, 0x00) catch unreachable;
         }
         emu.mem.rom_banks = c.banks;
+        emu.mem.writeMemoryRegister(.IO_JOY, 0b00001111);
 
         return emu;
     }
@@ -133,6 +134,7 @@ pub const Emulator = struct {
             try self.cpu_step();
             try self.timer.tick();
             try self.handle_interupts();
+            self.handleDMA();
             self.cpu_cycles_total += self.cpu_cycles;
             if (!self.disable_ppu) {
                 self.ppu.tick(self.cpu_cycles);
@@ -306,6 +308,20 @@ pub const Emulator = struct {
                 return error.NotImplemented;
             },
         };
+    }
+    fn handleDMA(self: *Emulator) void {
+        const dma_reg = self.mem.getMemoryRegister(.OAM_DMA);
+        if (dma_reg != 0) {
+            // todo simulates slower dma
+            const source = self.mem.getSlice(dma_reg << 4, (dma_reg << 4) + 0x9F) catch unreachable;
+            const destination = self.mem.getSlice(0xFE00, 0xFE9F) catch unreachable;
+            for (0..destination.len, 0..) |i, s| {
+                destination[i] = source[s];
+            }
+            std.log.info("-----DMA SUCCESS-----\n", .{});
+
+            self.mem.writeMemoryRegister(.OAM_DMA, 0);
+        }
     }
 };
 

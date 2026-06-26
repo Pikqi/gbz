@@ -159,7 +159,7 @@ pub const Ppu = struct {
                 if (ly == 152) {
                     emu.mem.writeMemoryRegister(.PPU_LY, 0);
                     stat.ppu_mode = .OAMSCAN;
-                    std.debug.print("Frame over\n", .{});
+                    //std.debug.print("Frame over\n", .{});
                     self.ready_to_draw = true;
                 } else {
                     emu.mem.writeMemoryRegister(.PPU_LY, ly + 1);

@@ -38,7 +38,7 @@ pub fn raylibMain(cat: Cartridge) !void {
     while (!rl.windowShouldClose()) {
         try emu.run_emu();
 
-        std.log.info("{X}", .{emu.mem.getMemoryRegister(.IO_JOY)});
+        //std.log.info("{X}", .{emu.mem.getMemoryRegister(.IO_JOY)});
 
         if (rl.isKeyPressed(.tab)) {
             draw_lower_tilemap = !draw_lower_tilemap;
