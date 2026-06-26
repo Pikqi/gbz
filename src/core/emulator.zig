@@ -123,6 +123,7 @@ pub const Emulator = struct {
                 std.debug.print("params: {X}\n", .{last.params});
             }
         }
+        defer if (self.doctor) |*doc| doc.flush();
         if (self.doctor) |*doc| {
             doc.log() catch |e| {
                 std.debug.print("Logging with doctor failed {t}", .{e});

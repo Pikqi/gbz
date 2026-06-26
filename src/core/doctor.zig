@@ -1,7 +1,7 @@
 const std = @import("std");
 const Emulator = @import("emulator.zig").Emulator;
 
-var buffer: [1024]u8 = undefined;
+var buffer: [128 * 1024]u8 = undefined;
 
 pub const DoctorLogger = struct {
     emu: *Emulator,
@@ -9,6 +9,11 @@ pub const DoctorLogger = struct {
     line_limit: ?usize = null,
     lines_printed: usize = 0,
     limit_reached: bool = false,
+    flush_interval: usize = 1000,
+
+    pub fn flush(self: *DoctorLogger) void {
+        self.file_writer.interface.flush() catch {};
+    }
     pub fn initWithFile(emu: *Emulator, file_path: []const u8) !DoctorLogger {
         const file = try std.fs.cwd().createFile(file_path, .{ .truncate = true });
         const doc = DoctorLogger{ .emu = emu, .file_writer = file.writerStreaming(&buffer) };
@@ -52,8 +57,10 @@ pub const DoctorLogger = struct {
             pcmem[2],
             pcmem[3],
         });
-        try self.file_writer.interface.flush();
         self.lines_printed += 1;
+        if (self.lines_printed % self.flush_interval == 0) {
+            self.file_writer.interface.flush() catch {};
+        }
         if (self.line_limit) |limit| {
             if (self.lines_printed >= limit) {
                 self.limit_reached = true;
