@@ -1,4 +1,5 @@
 const std = @import("std");
+const Emulator = @import("emulator.zig").Emulator;
 
 const MEM_SIZE = 0x10000;
 
@@ -141,6 +142,11 @@ pub const Memory = struct {
             return;
         }
         (try self.memoryMap(addrs)).* = value;
+
+        if (addrs == @intFromEnum(MemoryRegisters.TIMER_DIV)) {
+            const emu: *Emulator = @fieldParentPtr("mem", self);
+            emu.timer.onDivWrite();
+        }
 
         self.writeLog(addrs, value);
     }

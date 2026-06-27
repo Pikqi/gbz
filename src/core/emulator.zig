@@ -22,6 +22,11 @@ const LastInstruction = struct {
     params: [2]u8,
 };
 
+const EventType = enum {
+    TIMER_DIV,
+    TIMER_TIM,
+};
+
 pub const Emulator = struct {
     cpu: Cpu,
     mem: Memory = Memory{},
@@ -35,15 +40,34 @@ pub const Emulator = struct {
     last_instructinon: ?LastInstruction = null,
     interupts_enabled: bool = false,
     timer: Timer = Timer{},
+    now: u64 = 0, // absolute tcycles
     cpu_cycles: u64 = 0,
     cpu_cycles_total: u64 = 0,
     interupt_handled: bool = false,
     disable_ppu: bool = false,
     run_until_draw: bool = false,
 
+    next_div_event: u64 = 0,
+    next_tim_event: u64 = 0,
+
     pub fn initZero() Emulator {
         return Emulator{
             .cpu = Cpu.initZero(),
+        };
+    }
+
+    pub fn scheduleEvent(self: *Emulator, event: EventType, tcycles: u64) void {
+        self.eventTypeToCycleCounter(event).* = self.now + tcycles;
+    }
+
+    pub fn cancelEvent(self: *Emulator, event: EventType) void {
+        self.eventTypeToCycleCounter(event).* = 0;
+    }
+
+    fn eventTypeToCycleCounter(self: *Emulator, event: EventType) *u64 {
+        return switch (event) {
+            .TIMER_DIV => &self.next_div_event,
+            .TIMER_TIM => &self.next_tim_event,
         };
     }
 
@@ -133,7 +157,6 @@ pub const Emulator = struct {
             self.cpu_cycles = 0;
 
             try self.cpu_step();
-            try self.timer.tick();
             try self.handle_interupts();
             self.handleDMA();
             self.cpu_cycles_total += self.cpu_cycles;
