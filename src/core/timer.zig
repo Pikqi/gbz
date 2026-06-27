@@ -12,11 +12,6 @@ pub const Timer = struct {
     div_remainder_cycles: u64 = 0,
     tima_remainder_cycles: u64 = 0,
 
-    pub fn onDivWrite(self: *Timer) void {
-        const emu: *Emulator = @fieldParentPtr("timer", self);
-        emu.mem.writeMemoryRegister(.TIMER_DIV, 0);
-    }
-
     pub fn handleDIV(self: *Timer) !void {
         const emu: *Emulator = @fieldParentPtr("timer", self);
         const div = emu.mem.getMemoryRegister(.TIMER_DIV);

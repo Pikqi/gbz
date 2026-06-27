@@ -144,8 +144,7 @@ pub const Memory = struct {
         (try self.memoryMap(addrs)).* = value;
 
         if (addrs == @intFromEnum(MemoryRegisters.TIMER_DIV)) {
-            const emu: *Emulator = @fieldParentPtr("mem", self);
-            emu.timer.onDivWrite();
+            (try self.memoryMap(addrs)).* = 0;
         }
 
         self.writeLog(addrs, value);
