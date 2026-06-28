@@ -66,10 +66,11 @@ pub const Cartridge = struct {
     ch: CartridgeHeader,
     banks: [8][]u8 = undefined,
 
-    pub fn loadFromFile(fileName: []const u8, alloc: Allocator) !Cartridge {
+    pub fn loadFromFile(fileName: []const u8, alloc: Allocator, io: std.Io) !Cartridge {
         std.debug.print("filename: {s}\n", .{fileName});
-        const file = try std.fs.cwd().openFile(fileName, .{});
-        const contents = try file.readToEndAlloc(alloc, 8096 * 1024);
+        const file = try std.Io.Dir.cwd().openFile(io, fileName, .{});
+        var file_reader = file.reader(io, &.{});
+        const contents = try file_reader.interface.allocRemaining(alloc, .limited(8096 * 1024));
 
         var c = Cartridge{ .contents = contents, .alloc = alloc, .ch = undefined };
         try c.parseHeader();

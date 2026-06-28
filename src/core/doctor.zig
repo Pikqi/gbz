@@ -5,7 +5,7 @@ var buffer: [128 * 1024]u8 = undefined;
 
 pub const DoctorLogger = struct {
     emu: *Emulator,
-    file_writer: std.fs.File.Writer,
+    file_writer: std.Io.File.Writer,
     line_limit: ?usize = null,
     lines_printed: usize = 0,
     limit_reached: bool = false,
@@ -14,15 +14,15 @@ pub const DoctorLogger = struct {
     pub fn flush(self: *DoctorLogger) void {
         self.file_writer.interface.flush() catch {};
     }
-    pub fn initWithFile(emu: *Emulator, file_path: []const u8) !DoctorLogger {
-        const file = try std.fs.cwd().createFile(file_path, .{ .truncate = true });
-        const doc = DoctorLogger{ .emu = emu, .file_writer = file.writerStreaming(&buffer) };
+    pub fn initWithFile(emu: *Emulator, file_path: []const u8, io: std.Io) !DoctorLogger {
+        const file = try std.Io.Dir.cwd().createFile(io, file_path, .{});
+        const doc = DoctorLogger{ .emu = emu, .file_writer = file.writer(io, &buffer) };
         return doc;
     }
 
-    pub fn initStdOut(emu: *Emulator) DoctorLogger {
-        const std_out = std.fs.File.stdout();
-        const doc = DoctorLogger{ .emu = emu, .file_writer = std_out.writerStreaming(&buffer) };
+    pub fn initStdOut(emu: *Emulator, io: std.Io) DoctorLogger {
+        const std_out = std.Io.File.stdout();
+        const doc = DoctorLogger{ .emu = emu, .file_writer = std_out.writer(io, &buffer) };
         return doc;
     }
 
@@ -71,6 +71,7 @@ pub const DoctorLogger = struct {
 
 // todo write bytes to a buffer and test against that buffer
 test "doctorLogger test" {
+    const io = std.testing.io;
     var emu = Emulator.initZero();
     emu.cpu.getU8Register(.A).* = 0x01;
     emu.cpu.getU8Register(.F).* = 0xB0;
@@ -80,9 +81,9 @@ test "doctorLogger test" {
     emu.cpu.getU8Register(.E).* = 0xD8;
     emu.cpu.getU8Register(.L).* = 0x4D;
     emu.cpu.getU16Register(.SP).* = 0xFFFE;
-    emu.cpu.getU16Register(.PC).* = 0x0100;
+    emu.cpu.getU16Register(.PC).* = 0xC000;
 
-    var doctor_file = try DoctorLogger.initWithFile(&emu, "doctor-test.log");
+    var doctor_file = try DoctorLogger.initWithFile(&emu, "doctor-test.log", io);
     try doctor_file.log();
     try doctor_file.log();
     try doctor_file.log();

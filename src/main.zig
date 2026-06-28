@@ -10,34 +10,31 @@ const bootrom = @import("bootrom.zig").rom;
 
 const rom_path = "roms/dmg-acid2.gb";
 
-const stdow = std.io.getStdOut().writer();
+pub fn main(init: std.process.Init) !void {
+    const alloc = init.gpa;
+    const io = init.io;
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const alloc = gpa.allocator();
-    defer _ = gpa.deinit();
+    var arg_iter = init.minimal.args.iterate();
+    _ = arg_iter.next();
 
-    var args = try std.process.argsWithAllocator(alloc);
-    defer args.deinit();
-    _ = args.skip();
     const path = blk: {
-        if (args.next()) |path| {
+        if (arg_iter.next()) |path| {
             break :blk path;
         }
         break :blk rom_path;
     };
 
-    var romc = try Cartridge.loadFromFile(path, alloc);
+    var romc = try Cartridge.loadFromFile(path, alloc, io);
     defer romc.deinit();
     romc.ch.print();
 
-    try raylibMain(romc);
+    try raylibMain(romc, io);
     // try runNoPPU(romc);
 }
 
-fn runNoPPU(cat: Cartridge) !void {
+fn runNoPPU(cat: Cartridge, io: std.Io) !void {
     var emu = Emulator.initWithCatridge(cat, &bootrom);
-    emu.initDoctorFile("doctor_main.log") catch |err| {
+    emu.initDoctorFile("doctor_main.log", io) catch |err| {
         std.log.err("Failed init doctor file {t}", .{err});
     };
     try emu.runEmuWithBootRom(bootrom);

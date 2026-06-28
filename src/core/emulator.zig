@@ -42,7 +42,6 @@ pub const Emulator = struct {
     timer: Timer = Timer{},
     now: u64 = 0, // absolute tcycles
     cpu_cycles: u64 = 0,
-    cpu_cycles_total: u64 = 0,
     interupt_handled: bool = false,
     disable_ppu: bool = false,
     run_until_draw: bool = false,
@@ -53,21 +52,6 @@ pub const Emulator = struct {
     pub fn initZero() Emulator {
         return Emulator{
             .cpu = Cpu.initZero(),
-        };
-    }
-
-    pub fn scheduleEvent(self: *Emulator, event: EventType, tcycles: u64) void {
-        self.eventTypeToCycleCounter(event).* = self.now + tcycles;
-    }
-
-    pub fn cancelEvent(self: *Emulator, event: EventType) void {
-        self.eventTypeToCycleCounter(event).* = 0;
-    }
-
-    fn eventTypeToCycleCounter(self: *Emulator, event: EventType) *u64 {
-        return switch (event) {
-            .TIMER_DIV => &self.next_div_event,
-            .TIMER_TIM => &self.next_tim_event,
         };
     }
 
@@ -95,19 +79,21 @@ pub const Emulator = struct {
         return emu;
     }
 
-    pub fn initDoctorStdOut(self: *Emulator) !void {
+    pub fn initDoctorStdOut(self: *Emulator, io: std.Io) !void {
         if (self.doctor != null) {
             return error.DoctorAlreadyExists;
         }
-        self.doctor = DoctorLogger.initStdOut(self);
+        self.doctor = DoctorLogger.initStdOut(self, io);
     }
 
-    pub fn initDoctorFile(self: *Emulator, file_path: []const u8) !void {
+    pub fn initDoctorFile(self: *Emulator, file_path: []const u8, io: std.Io) !void {
         if (self.doctor != null) {
             return error.DoctorAlreadyExists;
         }
-        self.doctor = try DoctorLogger.initWithFile(self, file_path);
+        self.doctor = try DoctorLogger.initWithFile(self, file_path, io);
     }
+
+    // ===== STACK =====
 
     // todo implement stack overflow
     pub fn stackPush(self: *Emulator, upper: u8, lower: u8) !void {
@@ -138,6 +124,23 @@ pub const Emulator = struct {
         try self.run_emu();
     }
 
+    // ===== EVENT SCHEDULING =====
+
+    pub fn scheduleEvent(self: *Emulator, event: EventType, tcycles: u64) void {
+        self.eventTypeToCycleCounter(event).* = self.now + tcycles;
+    }
+
+    pub fn cancelEvent(self: *Emulator, event: EventType) void {
+        self.eventTypeToCycleCounter(event).* = 0;
+    }
+
+    fn eventTypeToCycleCounter(self: *Emulator, event: EventType) *u64 {
+        return switch (event) {
+            .TIMER_DIV => &self.next_div_event,
+            .TIMER_TIM => &self.next_tim_event,
+        };
+    }
+
     pub fn run_emu(self: *Emulator) !void {
         errdefer {
             if (self.last_instructinon) |last| {
@@ -159,7 +162,7 @@ pub const Emulator = struct {
             try self.cpu_step();
             try self.handle_interupts();
             self.handleDMA();
-            self.cpu_cycles_total += self.cpu_cycles;
+            self.now += self.cpu_cycles;
             if (!self.disable_ppu) {
                 self.ppu.tick(self.cpu_cycles);
             }
@@ -287,7 +290,7 @@ pub const Emulator = struct {
 
         self.cpu.pc = vector;
         self.interupts_enabled = false;
-        self.cpu_cycles_total += 5;
+        self.now += 5;
         self.interupt_handled = true;
     }
 
@@ -338,7 +341,7 @@ pub const Emulator = struct {
         if (dma_reg != 0) {
             // todo simulates slower dma
             const source = self.mem.getSlice(dma_reg << 4, (dma_reg << 4) + 0x9F) catch unreachable;
-            const destination = self.mem.getSlice(0xFE00, 0xFE9F) catch unreachable;
+            const destination = self.mem.getSlice(0xFE00, 0xFEA0) catch unreachable;
             for (0..destination.len, 0..) |i, s| {
                 destination[i] = source[s];
             }

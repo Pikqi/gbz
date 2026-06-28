@@ -30,22 +30,23 @@ const JsonStruct = struct {
     cbprefixed: []InstructionO,
 };
 
-pub fn main() !void {
-    const alloc = std.heap.page_allocator;
+pub fn main(init: std.process.Init) !void {
+    const alloc = init.gpa;
+    const io = init.io;
 
     var stdout_buffer: [4096]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
-    const out = &stdout_writer.interface;
+    const out = std.Io.File.stdout().writer(io, &stdout_buffer);
 
-    try generateSet(alloc, out, false);
+    try generateSet(alloc, out, false, io);
     try out.print("\n", .{});
-    try generateSet(alloc, out, true);
+    try generateSet(alloc, out, true, io);
     out.flush() catch {};
 }
 
-fn generateSet(alloc: std.mem.Allocator, out: *std.io.Writer, cb: bool) !void {
-    const json_file = try std.fs.cwd().openFile("normal.json", .{});
-    const contents = try json_file.readToEndAlloc(alloc, 100_000_000);
+fn generateSet(alloc: std.mem.Allocator, out: *std.Io.Writer, cb: bool, io: std.Io) !void {
+    const json_file = try std.Io.Dir.cwd().openFile(io, "normal.json", .{});
+    var json_reader = json_file.reader(io, &.{});
+    const contents = try json_reader.interface.allocRemaining(alloc, .limited(100_000_000));
     defer alloc.free(contents);
 
     const r = try std.json.parseFromSlice(JsonStruct, alloc, contents, .{ .ignore_unknown_fields = true, .parse_numbers = true, .allocate = .alloc_always });
@@ -53,7 +54,7 @@ fn generateSet(alloc: std.mem.Allocator, out: *std.io.Writer, cb: bool) !void {
 
     try out.print("\n// === {s} ===\n", .{if (cb) "CB-prefixed" else "unprefixed"});
 
-    var map = std.AutoArrayHashMap(usize, Instruction).init(alloc);
+    var map = std.array_hash_map.Auto(usize, Instruction).init(alloc);
     defer map.deinit();
 
     const instruction_set = if (cb) r.value.cbprefixed else r.value.unprefixed;
@@ -292,7 +293,7 @@ fn parseFlag(str: []u8) InstructionMod.InstructionFlag {
     }
 }
 
-pub fn dumpDefinition(inst: Instruction, key: usize, cb: bool, out: *std.io.Writer) !void {
+pub fn dumpDefinition(inst: Instruction, key: usize, cb: bool, out: *std.Io.Writer) !void {
     try out.print("\n\n", .{});
     try out.print("t_instructions[0x{X}] = Instruction{{", .{key});
     // out.print(".name = \"{s}\",", .{inst.name});
@@ -359,7 +360,7 @@ pub fn dumpDefinition(inst: Instruction, key: usize, cb: bool, out: *std.io.Writ
     // };
 
 }
-fn genereateMnemonic(i: Instruction, key: usize, cb: bool, out: *std.io.Writer) !void {
+fn genereateMnemonic(i: Instruction, key: usize, cb: bool, out: *std.Io.Writer) !void {
     try out.print(".name = \"{t} ", .{i.type});
     if (key == 0xF8 and !cb) {
         try out.print("HL,(SP)+i8 - 0x{X}\",", .{key});

@@ -2,7 +2,7 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    zig_0_15
+    zig_0_16
     pkg-config
 
     # OpenGL / GLX

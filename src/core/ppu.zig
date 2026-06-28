@@ -255,14 +255,13 @@ pub const Ppu = struct {
         return tilemap;
     }
 
-    pub fn debugPrintVRAMwithANSI(self: *Ppu) !void {
+    pub fn debugPrintVRAMwithANSI(self: *Ppu, io: std.Io) !void {
         const tiles = self.getVRAMPixels();
         const tiles_per_row = 12;
         const rows = (tiles.len / tiles_per_row) * 8;
 
         var stdout_buffer: [1024]u8 = undefined;
-        var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
-        const stdout = &stdout_writer.interface;
+        const stdout = std.Io.File.stdout().writer(io, &stdout_buffer);
 
         try stdout.print("\n\n----------\n", .{});
 
@@ -336,7 +335,7 @@ test "Tile from slice" {
     const expected_tile_bytes: u128 = 0x3C7E4242424242427E5E7E0A7C56387C;
     const tile = try Tile.fromSlice(&slice);
     const expected_pixels = blk: {
-        var p = std.mem.zeroes([8][8]u2);
+        var p = std.mem.zeroes([8][8]u8);
         p[0] = .{ 0b00, 0b10, 0b11, 0b11, 0b11, 0b11, 0b10, 0b00 };
         p[1] = .{ 0b00, 0b11, 0b00, 0b00, 0b00, 0b00, 0b11, 0b00 };
         p[2] = .{ 0b00, 0b11, 0b00, 0b00, 0b00, 0b00, 0b11, 0b00 };

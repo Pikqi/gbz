@@ -44,6 +44,7 @@ pub fn build(b: *std.Build) void {
     const exe = b.addExecutable(.{
         .name = "zgb",
         .root_module = exe_mod,
+        .use_llvm = true,
     });
     const raylib_dep = b.dependency("raylib_zig", .{
         .target = target,
@@ -53,7 +54,7 @@ pub fn build(b: *std.Build) void {
     const raylib = raylib_dep.module("raylib"); // main raylib module
     const raygui = raylib_dep.module("raygui"); // raygui module
     const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C library
-    exe.linkLibrary(raylib_artifact);
+    exe.root_module.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
 
@@ -88,6 +89,7 @@ pub fn build(b: *std.Build) void {
     const exe_check = b.addExecutable(.{
         .name = "zgb",
         .root_module = exe_mod,
+        .use_llvm = true,
     });
 
     const check = b.step("check", "Check if it compiles");
@@ -95,11 +97,15 @@ pub fn build(b: *std.Build) void {
 
     const exe_unit_tests = b.addTest(.{
         .root_module = exe_mod,
+        .use_llvm = true,
     });
 
     const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
 
-    const core_unit_tests = b.addTest(.{ .root_module = core });
+    const core_unit_tests = b.addTest(.{
+        .root_module = core,
+        .use_llvm = true,
+    });
     const run_core_unit_tests = b.addRunArtifact(core_unit_tests);
 
     // Similar to creating the run step earlier, this exposes a `test` step to
@@ -120,7 +126,7 @@ pub fn build(b: *std.Build) void {
         }},
     });
 
-    const testing_test = b.addTest(.{ .root_module = testing_module });
+    const testing_test = b.addTest(.{ .root_module = testing_module, .use_llvm = true });
     const run_longer_test = b.addRunArtifact(testing_test);
     const testing_module_step = b.step("test-long", "Run longer tests");
     testing_module_step.dependOn(&run_longer_test.step);

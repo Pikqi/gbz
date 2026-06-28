@@ -34,11 +34,11 @@ pub const FlagsRegister = packed struct(u8) {
     }
 };
 
-pub const DoubleRegister = packed struct(u16) {
+pub const DoubleRegister = struct {
     lower: u8,
     upper: u8,
     pub fn getWholePtr(self: *DoubleRegister) *u16 {
-        return @ptrCast(self);
+        return @ptrCast(@alignCast(self));
     }
 };
 

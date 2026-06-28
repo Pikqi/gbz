@@ -48,14 +48,13 @@ test "11" {
 }
 
 fn doctor_test(comptime file_name: []const u8, comptime lines_limit: usize, hash: []const u8) !void {
-    try run_emu_with_doctor(file_name, lines_limit);
-    const doctor_file = try std.fs.cwd().openFile(log_file_prefix ++ file_name ++ ".log", .{
-        .mode = .read_only,
-    });
+    const io = std.testing.io;
+    try run_emu_with_doctor(file_name, lines_limit, io);
+    const doctor_file = try std.Io.Dir.cwd().openFile(io, log_file_prefix ++ file_name ++ ".log", .{});
 
     var read_buffer: [4096]u8 = undefined;
 
-    var doctor_reader = doctor_file.reader(&read_buffer);
+    var doctor_reader = doctor_file.reader(io, &read_buffer);
     const doctor_all = try doctor_reader.interface.allocRemaining(alloc, .unlimited);
     defer alloc.free(doctor_all);
 
@@ -67,17 +66,17 @@ fn doctor_test(comptime file_name: []const u8, comptime lines_limit: usize, hash
     // try std.testing.expectEqualSlices(u8, success_all, doctor_all);
 }
 
-fn run_emu_with_doctor(comptime file_name: []const u8, comptime lines_limit: usize) !void {
+fn run_emu_with_doctor(comptime file_name: []const u8, comptime lines_limit: usize, io: std.Io) !void {
     const file_path = roms_prefix ++ file_name;
 
     const log_file_name = log_file_prefix ++ file_name ++ ".log";
-    try std.fs.cwd().makePath(log_file_prefix);
+    try std.Io.Dir.cwd().createDirPath(io, log_file_prefix);
 
-    var cat = try Cartridge.loadFromFile(file_path, std.testing.allocator);
+    var cat = try Cartridge.loadFromFile(file_path, std.testing.allocator, io);
     defer cat.deinit();
 
     var emu = Emulator.initWithCatridge(cat, null);
-    try emu.initDoctorFile(log_file_name);
+    try emu.initDoctorFile(log_file_name, io);
     emu.doctor.?.line_limit = lines_limit;
     emu.mem.writeMemoryRegister(.PPU_LY, 0x90);
     emu.disable_ppu = true;

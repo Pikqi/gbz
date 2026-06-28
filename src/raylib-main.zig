@@ -25,7 +25,8 @@ const DRAW_VRAM = true;
 const DRAW_TILEMAPS = true;
 var draw_lower_tilemap = true;
 
-pub fn raylibMain(cat: Cartridge) !void {
+pub fn raylibMain(cat: Cartridge, io: std.Io) !void {
+    _ = io;
     var emu = Emulator.initWithCatridge(cat, null);
     emu.run_until_draw = true;
     emu.mem.logs_enabled = false;
