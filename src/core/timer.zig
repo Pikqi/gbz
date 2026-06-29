@@ -29,7 +29,8 @@ pub const Timer = struct {
         emu.cancelEvent(.TIMER_TIM);
     }
 
-    pub fn handleTIM(self: *Timer) !void {
+    pub fn handleTIM(self: *Timer) void {
+        std.log.debug("handleTim", .{});
         const emu: *Emulator = @fieldParentPtr("timer", self);
         var tima = emu.mem.getMemoryRegister(.TIMER_TIMA);
         tima +%= 1;
@@ -40,7 +41,13 @@ pub const Timer = struct {
         } else {
             emu.mem.writeMemoryRegister(.TIMER_TIMA, tima);
         }
-        emu.scheduleEvent(.TIMER_DIV, self.getTacSpeed());
+
+        const tac = self.getTacSpeed();
+        if (tac == 0) {
+            emu.cancelEvent(.TIMER_TIM);
+        } else {
+            emu.scheduleEvent(.TIMER_TIM, self.getTacSpeed());
+        }
     }
 
     /// how many t cycles until next need for increment
