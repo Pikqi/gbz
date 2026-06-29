@@ -358,7 +358,9 @@ pub const Emulator = struct {
         }
         const IF = self.mem.getIF();
         const IE: InteruptFlag = @bitCast(self.mem.getMemoryRegister(.IE));
-
+        if (IF.byteCast() & IE.byteCast() == 0) {
+            return;
+        }
         if (IF.vblank and IE.vblank) {
             self.mem.setIFInterupt(.VBLANK, false);
             try self.gotoInterupt(0x0040);
