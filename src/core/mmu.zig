@@ -70,67 +70,20 @@ pub const Memory = struct {
         }
     }
 
-    fn memoryMap(self: *Memory, addr: usize) !*u8 {
-        if (addr > 0xFFFF) {
-            @panic("Address out of range");
+    fn memoryMap(self: *Memory, addr: usize) *u8 {
+        if (addr >= 0x8000) return &self.mem[addr];
+        if (addr < 0x0100) {
+            return if (self.boot_rom_mapped) &self.boot_rom[addr] else &self.mem[addr];
         }
-        return switch (@as(u16, @intCast(addr))) {
-            0x0...0xFF => {
-                if (self.boot_rom_mapped) {
-                    return &self.boot_rom[addr];
-                }
-
-                return &self.mem[addr];
-            },
-            0x0100...0x3FFF, // ROM BANK 0
-            => {
-                return &self.rom_banks[0][addr];
-            },
-            0xD000...0xDFFF, // WRAM 2
-            0xFE00...0xFE9F, // OAM
-            0xFF00...0xFF7F, // IO Registers
-            0xFF80...0xFFFE, // HRAM
-            0xFFFF, // IE
-            => {
-                return &self.mem[addr];
-            },
-            //External ram
-            0xA000...0xBFFF => {
-                return &self.mem[addr];
-            },
-
-            // VRAM
-            0x8000...0x9FFF => {
-                return &self.mem[addr];
-            },
-
-            // WRAM
-            0xC000...0xCFFF => {
-                // todo echo
-                return &self.mem[addr];
-            },
-            0xE000...0xFDFF, // ECHO RAM
-            => {
-                // todo handle echo ram;
-                return &self.mem[addr];
-            },
-            //ROM BANK NN
-            0x4000...0x7FFF => {
-                return &self.rom_banks[self.rom_bank_selected][addr - 0x4000];
-            },
-            // Not usable
-            0xFEA0...0xFEFF => {
-                // todo handle unusable part
-                return &self.mem[addr];
-            },
-        };
+        if (addr < 0x4000) return &self.rom_banks[0][addr];
+        return &self.rom_banks[self.rom_bank_selected][addr - 0x4000];
     }
 
     pub fn read(self: *Memory, addrs: usize) !u8 {
         if (addrs >= self.mem.len) {
             return error.MemWriteOutOfBounds;
         }
-        return (try self.memoryMap(addrs)).*;
+        return self.memoryMap(addrs).*;
     }
 
     pub fn write(self: *Memory, addrs: usize, value: u8) !void {
@@ -141,10 +94,11 @@ pub const Memory = struct {
             std.log.warn("Tried to write to rom, at address 0x{X}", .{addrs});
             return;
         }
-        (try self.memoryMap(addrs)).* = value;
+        const ptr = self.memoryMap(addrs);
+        ptr.* = value;
 
         if (addrs == @intFromEnum(MemoryRegisters.TIMER_DIV)) {
-            (try self.memoryMap(addrs)).* = 0;
+            ptr.* = 0;
         }
 
         self.writeLog(addrs, value);
@@ -162,7 +116,7 @@ pub const Memory = struct {
         return self.mem[start..end];
     }
     pub fn getMemoryRegister(self: *Memory, reg: MemoryRegisters) u8 {
-        return self.read(@intFromEnum(reg)) catch unreachable;
+        return self.memoryMap(@intFromEnum(reg)).*;
     }
     pub fn writeMemoryRegister(self: *Memory, reg: MemoryRegisters, value: u8) void {
         self.write(@intFromEnum(reg), value) catch unreachable;
