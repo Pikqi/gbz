@@ -46,7 +46,9 @@ pub const Emulator = struct {
     disable_ppu: bool = false,
     run_until_draw: bool = false,
 
-    next_div_event: u64 = 0,
+    // Absolute tcycles for scheduled events
+    // 0 means the event is not scheduled
+    next_div_event: u64 = 256,
     next_tim_event: u64 = 0,
 
     pub fn initZero() Emulator {
@@ -134,6 +136,20 @@ pub const Emulator = struct {
         self.eventTypeToCycleCounter(event).* = 0;
     }
 
+    pub fn printEvents(self: *Emulator) void {
+        std.debug.print("now: {d}\n", .{self.now});
+        inline for (std.meta.fields(EventType)) |field| {
+            const event = @field(EventType, field.name);
+            const when = self.eventTypeToCycleCounter(event).*;
+            std.debug.print("  {s}: ", .{field.name});
+            if (when == 0) {
+                std.debug.print("not scheduled\n", .{});
+            } else {
+                std.debug.print("{d} (in {d})\n", .{ when, when -% self.now });
+            }
+        }
+    }
+
     fn eventTypeToCycleCounter(self: *Emulator, event: EventType) *u64 {
         return switch (event) {
             .TIMER_DIV => &self.next_div_event,
@@ -157,10 +173,8 @@ pub const Emulator = struct {
             };
         }
         while (!self.is_stopped) {
-            self.cpu_cycles = 0;
-
-            try self.cpu_step();
-            try self.handle_interupts();
+            try self.cpuStep();
+            try self.handleInterupts();
             self.handleDMA();
             self.now += self.cpu_cycles;
             if (!self.disable_ppu) {
@@ -179,10 +193,99 @@ pub const Emulator = struct {
         }
     }
 
-    pub fn cpu_step(self: *Emulator) !void {
+    pub fn runEmuForOneFrame(self: *Emulator) !void {
+        errdefer {
+            if (self.last_instructinon) |last| {
+                std.debug.print("Last Instruction before error:\n", .{});
+                const instruction_set = if (last.prefixed) prefixed_instructions else instructions;
+                instruction_set[last.id].?.print();
+                std.debug.print("params: {X}\n", .{last.params});
+            }
+        }
+
+        while (!self.ppu.ready_to_draw) {
+            self.cpu_cycles = 0;
+
+            // self.printEvents();
+
+            const next_when = self.nextEventTime();
+            if (next_when == 0) {
+                try self.cpuStep();
+                self.now += self.cpu_cycles;
+                try self.handleInterupts();
+                continue;
+            }
+
+            if (next_when > self.now) {
+                try self.cpuStepFor(next_when - self.now);
+            }
+
+            if (!self.disable_ppu) {
+                self.ppu.tick(self.cpu_cycles);
+                try self.handleInterupts();
+            }
+            try self.fireDueEvents(next_when);
+        }
+        self.ppu.ready_to_draw = false;
+    }
+
+    const Handler = *const fn (self: *Emulator) anyerror!void;
+
+    fn handleTIM(self: *Emulator) !void {
+        return self.timer.handleTIM();
+    }
+    fn handleDIV(self: *Emulator) !void {
+        return self.timer.handleDIV();
+    }
+
+    fn eventHandler(event: EventType) Handler {
+        return switch (event) {
+            .TIMER_DIV => handleDIV,
+            .TIMER_TIM => handleTIM,
+        };
+    }
+
+    /// Returns the absolute tcycle of the next scheduled event, or 0 if none.
+    fn nextEventTime(self: *Emulator) u64 {
+        var earliest: u64 = std.math.maxInt(u64);
+        inline for (std.meta.fields(EventType)) |field| {
+            const event = @field(EventType, field.name);
+            const when = self.eventTypeToCycleCounter(event).*;
+            if (when != 0 and when < earliest) {
+                earliest = when;
+            }
+        }
+        return if (earliest == std.math.maxInt(u64)) 0 else earliest;
+    }
+
+    /// Fires every event whose scheduled time has been reached.
+    /// `at_time` is captured so events rescheduled by a handler to a later
+    /// tick are not re-fired in this pass.
+    fn fireDueEvents(self: *Emulator, at_time: u64) !void {
+        inline for (std.meta.fields(EventType)) |field| {
+            const event = @field(EventType, field.name);
+            const counter = self.eventTypeToCycleCounter(event);
+            if (counter.* != 0 and counter.* <= at_time) {
+                try eventHandler(event)(self);
+            }
+        }
+    }
+
+    fn cpuStepFor(self: *Emulator, budget: u64) !void {
+        const end = self.now + budget;
+        while (self.now <= end) {
+            try self.cpuStep();
+            self.now += self.cpu_cycles;
+            try self.handleInterupts();
+        }
+    }
+
+    pub fn cpuStep(self: *Emulator) !void {
+        self.cpu_cycles = 0;
         // var sp = &self.cpu.sp;
         if (self.cpu.is_halted) {
             self.cpu_cycles += 1;
+            try self.handleInterupts();
             return;
         }
         const pc = &self.cpu.pc;
@@ -249,7 +352,7 @@ pub const Emulator = struct {
         }
     }
 
-    pub fn handle_interupts(self: *Emulator) !void {
+    pub fn handleInterupts(self: *Emulator) !void {
         if (!self.interupts_enabled) {
             return;
         }
@@ -290,7 +393,6 @@ pub const Emulator = struct {
 
         self.cpu.pc = vector;
         self.interupts_enabled = false;
-        self.now += 5;
         self.interupt_handled = true;
     }
 

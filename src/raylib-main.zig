@@ -20,9 +20,9 @@ const WIDTH = GB_WIDTH * SCALE + 32 * TILE_SIZE;
 const TILES_PER_ROW = (GB_WIDTH * SCALE) / TILE_SIZE;
 
 const HEIGHT = GB_HEIGHT * SCALE + (VRAM_TILES / TILES_PER_ROW) * TILE_SIZE;
-const DRAW_VRAM = true;
+const DRAW_VRAM = false;
 
-const DRAW_TILEMAPS = true;
+const DRAW_TILEMAPS = false;
 var draw_lower_tilemap = true;
 
 pub fn raylibMain(cat: Cartridge, io: std.Io) !void {
@@ -37,7 +37,7 @@ pub fn raylibMain(cat: Cartridge, io: std.Io) !void {
     rl.setTargetFPS(60);
 
     while (!rl.windowShouldClose()) {
-        try emu.run_emu();
+        try emu.runEmuForOneFrame();
 
         //std.log.info("{X}", .{emu.mem.getMemoryRegister(.IO_JOY)});
 
@@ -57,17 +57,9 @@ pub fn raylibMain(cat: Cartridge, io: std.Io) !void {
         }
 
         if (DRAW_TILEMAPS) {
-            var tilemap = emu.ppu.getTileMapPixels(draw_lower_tilemap);
+            const tilemap = emu.ppu.getTileMapPixels(draw_lower_tilemap);
             drawTiles(&tilemap, 32, GB_WIDTH * SCALE + TILE_SIZE, 0);
-            tilemap = emu.ppu.getTileMapPixels(false);
         }
-
-        const tilemap_tiles = emu.ppu.getTileMapPixels(true);
-        var start: usize = 0;
-        _ = &start;
-        const tilemap_tiles_slice = tilemap_tiles[start..];
-        _ = tilemap_tiles_slice; // autofix
-        //drawTiles(tilemap_tiles_slice, 32, GB_WIDTH * scale, 0);
     }
 }
 
